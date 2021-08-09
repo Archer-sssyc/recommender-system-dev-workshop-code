@@ -140,6 +140,22 @@ projects_dir=(
   "news/filter-batch"
   "news/inverted-list"
   "news/step-funcs"
+  "movie/action-preprocessing"
+  "movie/add-item-batch"
+  "movie/add-user-batch"
+  "movie/dashboard"
+  "movie/filter-batch"
+  "movie/inverted-list"
+  "movie/item-feature-update-batch"
+  "movie/item-preprocessing"
+  "movie/model-update-deepfm"
+  "movie/model-update-ub"
+  "movie/portrait-batch"
+  "movie/rank-batch"
+  "movie/recall-batch"
+  "movie/step-funcs"
+  "movie/user-preprocessing"
+  
 )
 
 for project in ${projects_dir[@]}; do

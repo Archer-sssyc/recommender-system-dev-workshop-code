@@ -6,13 +6,13 @@ from tqdm import tqdm
 
 
 def gen_data_set(data, negsample=0, item_ids=None):
-    data.sort_values("timestamp", inplace=True)
+    data.sort_values("time", inplace=True)
     #     item_ids = data['movie_id'].unique()
 
     train_set = []
     test_set = []
     for reviewerID, hist in tqdm(data.groupby('user_id')):
-        pos_list = hist['movie_id'].tolist()
+        pos_list = hist['card_song_id'].tolist()
         rating_list = hist['rating'].tolist()
 
         if negsample > 0:
@@ -36,11 +36,11 @@ def gen_data_set(data, negsample=0, item_ids=None):
 
 
 def gen_data_set_sdm(data, seq_short_len=5, seq_prefer_len=50):
-    data.sort_values("timestamp", inplace=True)
+    data.sort_values("time", inplace=True)
     train_set = []
     test_set = []
     for reviewerID, hist in tqdm(data.groupby('user_id')):
-        pos_list = hist['movie_id'].tolist()
+        pos_list = hist['card_song_id'].tolist()
         #         genres_list = hist['genres'].tolist()
         rating_list = hist['rating'].tolist()
         for i in range(1, len(pos_list)):
@@ -85,7 +85,7 @@ def gen_model_input(train_set, user_profile, seq_max_len):
     train_hist_len = np.array([line[4] for line in train_set])
 
     train_seq_pad = pad_sequences(train_seq, maxlen=seq_max_len, padding='post', truncating='post', value=0)
-    train_model_input = {"user_id": train_uid, "movie_id": train_iid, "hist_movie_id": train_seq_pad,
+    train_model_input = {"user_id": train_uid, "card_song_id": train_iid, "hist_card_song_id": train_seq_pad,
                          "hist_len": train_hist_len}
 
     #     for key in ["gender", "age", "occupation", "zip"]:
@@ -116,13 +116,13 @@ def gen_model_input_sdm(train_set, user_profile, seq_short_len, seq_prefer_len):
                                             truncating='post',
                                             value=0)
 
-    train_model_input = {"user_id": train_uid, "movie_id": train_iid, "short_movie_id": train_short_item_pad,
-                         "prefer_movie_id": train_prefer_item_pad, "prefer_sess_length": train_prefer_len,
+    train_model_input = {"user_id": train_uid, "card_song_id": train_iid, "short_card_song_id_id": train_short_item_pad,
+                         "prefer_card_song_id_id": train_prefer_item_pad, "prefer_sess_length": train_prefer_len,
                          "short_sess_length":
                              train_short_len, 'short_genres': train_short_genres_pad,
                          'prefer_genres': train_prefer_genres_pad}
 
-    for key in ["gender", "age", "occupation", "zip"]:
+    for key in ["u_sex", "u_country", "u_age", "u_phone_manufacturer"]:
         train_model_input[key] = user_profile.loc[train_model_input['user_id']][key].values
 
     return train_model_input, train_label

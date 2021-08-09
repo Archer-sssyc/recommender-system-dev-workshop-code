@@ -2,8 +2,8 @@
 set -e
 
 export SECRET_NAME=gcr-rs-dev-workshop-github
-export GITHUB_USER=<github_user_name>
-export ACCESS_TOKEN=<github_access_token>
+export GITHUB_USER=Archer-sssyc
+export ACCESS_TOKEN=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
 export APP_CONF_REPO=recommender-system-dev-workshop-code
 
 input=$1

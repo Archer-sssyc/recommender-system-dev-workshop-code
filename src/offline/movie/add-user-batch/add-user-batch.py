@@ -111,8 +111,7 @@ s3_folder = '{}/system/user-data/'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 
 # !!!应该用用户注册数据来生成encoding map
-user_df = pd.read_csv('info/user.csv', sep='_!_',
-                      names=['user_id', 'sex', 'age', 'timestamp', 'name'])
+user_df = pd.read_csv('info/user.csv')
 
 lbe = LabelEncoder()
 

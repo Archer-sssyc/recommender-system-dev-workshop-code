@@ -48,20 +48,7 @@ def write_str_to_s3(content, bucket, key):
 
 
 def prepare_df(item_path):
-    return pd.read_csv(item_path, sep="_!_", names=[
-        "program_id",
-        "program_type",
-        "program_name",
-        "release_year",
-        "director",
-        "actor",
-        "category_property",
-        "language",
-        "ticket_num",
-        "popularity",
-        "score",
-        "level",
-        "is_new"])
+    return pd.read_csv(item_path)
 
 
 def get_actor(actor_str):
@@ -140,7 +127,7 @@ except Exception as e:
     print(repr(e))
 
 # 倒排列表的pickle文件
-file_name_list = ['movie_id_movie_property_dict.pickle']
+file_name_list = ['card_id_card_property_dict.pickle']
 s3_folder = '{}/feature/content/inverted-list/'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 
@@ -149,9 +136,9 @@ s3_folder = '{}/system/item-data/'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 
 # 加载pickle文件
-file_to_load = open("info/movie_id_movie_property_dict.pickle", "rb")
+file_to_load = open("info/card_id_card_property_dict.pickle", "rb")
 dict_id_content = pickle.load(file_to_load)
-print("length of movie_id v.s. movie_property {}".format(len(dict_id_content)))
+print("length of card_id v.s. card_property {}".format(len(dict_id_content)))
 file_to_load = open("info/raw_embed_item_mapping.pickle", "rb")
 raw_embed_item_mapping = pickle.load(file_to_load)
 file_to_load = open("info/raw_embed_user_mapping.pickle", "rb")
@@ -178,50 +165,50 @@ else:
 embed_dim = 32
 
 df = prepare_df("info/item.csv")
-movie_id_movie_property_data = {}
+card_id_card_property_data = {}
 row_cnt = 0
 for row in df.iterrows():
     item_row = row[1]
-    program_id = str(item_row['program_id'])
+    program_id = str(item_row['card_song_id'])
     program_dict = {
-        'director': get_single_item(item_row['director']),
-        'level': get_single_item(item_row['level']),
-        'year': get_single_item(item_row['release_year']),
-        'actor': get_actor(item_row['actor']),
-        'category': get_category(item_row['category_property']),
-        'language': get_single_item(item_row['language'])
+        'c_singer_sex': str(item_row['c_singer_sex']),
+        'c_singer_user_id': str(item_row['c_singer_user_id']),
+        'c_singer_age': str(item_row['c_singer_age']),
+        'c_singer_country': str(item_row['c_singer_country']),
+        'c_song_name': str(item_row['c_song_name']),
+        'c_song_artist': str(item_row['c_song_artist'])
     }
     row_content = []
-    row_content.append(str(item_row['program_id']))
-    row_content.append(program_dict['director'])
-    row_content.append(program_dict['level'])
-    row_content.append(program_dict['year'])
-    row_content.append(program_dict['actor'])
-    row_content.append(program_dict['category'])
-    row_content.append(program_dict['language'])
-    movie_id_movie_property_data['row_{}'.format(row_cnt)] = row_content
+    row_content.append(str(item_row['card_song_id']))
+    row_content.append(program_dict['c_singer_sex'])
+    row_content.append(program_dict['c_singer_user_id'])
+    row_content.append(program_dict['c_singer_age'])
+    row_content.append(program_dict['c_singer_country'])
+    row_content.append(program_dict['c_song_name'])
+    row_content.append(program_dict['c_song_artist'])
+    card_id_card_property_data['row_{}'.format(row_cnt)] = row_content
     row_cnt = row_cnt + 1
 
-raw_data_pddf = pd.DataFrame.from_dict(movie_id_movie_property_data, orient='index',
-                                       columns=['programId', 'director', 'level', 'year', 'actor', 'actegory',
-                                                'language'])
+raw_data_pddf = pd.DataFrame.from_dict(card_id_card_property_data, orient='index',
+                                       columns=['card_song_id', 'c_singer_sex', 'c_singer_user_id', 'c_singer_age', 'c_singer_country', 'c_song_name',
+                                                'c_song_artist'])
 raw_data_pddf = raw_data_pddf.reset_index(drop=True)
 
 sample_data_pddf = raw_data_pddf
 
 # item id feature - item embedding
 print("根据item_id索引itemid_feat（嵌入）")
-sample_data_pddf['itemid_feat'] = sample_data_pddf['programId'].progress_apply(
+sample_data_pddf['itemid_feat'] = sample_data_pddf['card_song_id'].progress_apply(
     lambda x: item_embed(x, raw_embed_item_mapping, ub_item_embeddings))
 print("将{}维物品嵌入转化为不同的连续型feature".format(embed_dim))
 for i in tqdm(range(embed_dim)):
     sample_data_pddf['item_feature_{}'.format(i)] = sample_data_pddf['itemid_feat'].apply(lambda x: item_id_feat(x, i))
 # sparse feature
 print("根据item_id对应的content生成离散feature")
-popularity_method_list = ['category', 'director',
-                          'actor', 'language', 'level', 'year']
+popularity_method_list = ['c_singer_sex', 'c_singer_user_id', 'c_singer_age', 'c_singer_country', 'c_song_name',
+                                                'c_song_artist']
 for i, mt in tqdm(enumerate(popularity_method_list)):
-    sample_data_pddf['sparse_feature_{}'.format(i)] = sample_data_pddf['programId'].apply(
+    sample_data_pddf['sparse_feature_{}'.format(i)] = sample_data_pddf['card_song_id'].apply(
         lambda x: sparse_item_id_feat(x, mt))
 
 mk_data = sample_data_pddf
@@ -243,14 +230,14 @@ for feat in mk_sparse_features:
 nms = MinMaxScaler(feature_range=(0, 1))
 mk_data[mk_dense_features] = nms.fit_transform(mk_data[mk_dense_features])
 
-movie_id_movie_feature_data = {}
+card_id_card_feature_data = {}
 for row in mk_data.iterrows():
     item_row = row[1]
     #     print(item_row)
     #     break
-    program_dict = str(item_row['programId'])
+    program_dict = str(item_row['card_song_id'])
     row_content = []
-    row_content.append(str(item_row['programId']))
+    row_content.append(str(item_row['card_song_id']))
     dense_score = []
     for feat in mk_sparse_features:
         row_content.append(item_row[feat])
@@ -258,13 +245,13 @@ for row in mk_data.iterrows():
         row_content.append(item_row[feat])
         dense_score.append(item_row[feat])
     row_content.append(np.mean(dense_score))
-    movie_id_movie_feature_data['row_{}'.format(row_cnt)] = row_content
+    card_id_card_feature_data['row_{}'.format(row_cnt)] = row_content
     row_cnt = row_cnt + 1
 
-col_names = ['programId'] + mk_sparse_features + mk_dense_features + ['item_feat_mean']
-mk_item_feature_pddf = pd.DataFrame.from_dict(movie_id_movie_feature_data, orient='index', columns=col_names)
+col_names = ['card_song_id'] + mk_sparse_features + mk_dense_features + ['item_feat_mean']
+mk_item_feature_pddf = pd.DataFrame.from_dict(card_id_card_feature_data, orient='index', columns=col_names)
 mk_item_feature_pddf = mk_item_feature_pddf.reset_index(drop=True)
 
-file_name = 'info/movie_id_movie_feature_dict.pickle'
+file_name = 'info/card_id_card_feature_dict.pickle'
 mk_item_feature_pddf.to_pickle(file_name)
 write_to_s3(file_name, bucket, "{}/feature/content/inverted-list/{}".format(prefix, file_name.split('/')[-1]))

@@ -72,21 +72,21 @@ with SparkSession.builder.appName("Spark App - action preprocessing").getOrCreat
     # process user file
     #
     print("start processing user file: {}".format(input_user_file))
-    df_user_input = spark.read.text(input_user_file)
+    df_user_input = spark.read.csv(input_user_file, header=True)
     # 2361_!_M_!_57_!_1608411863_!_gutturalPie9
-    df_user_input = df_user_input.selectExpr("split(value, '_!_') as row").where(
-        size(col("row")) > 4).selectExpr("row[0] as user_id",
-                                         "row[1] as sex",
-                                         "row[2] as age",
-                                         "row[3] as timestamp",
-                                         "row[4] as name",
-                                         )
+    # df_user_input = df_user_input.selectExpr("split(value, '_!_') as row").where(
+    #     size(col("row")) > 4).selectExpr("row[0] as user_id",
+    #                                      "row[1] as sex",
+    #                                      "row[2] as age",
+    #                                      "row[3] as timestamp",
+    #                                      "row[4] as name",
+    #                                      )
     df_user_input = df_user_input.dropDuplicates(['user_id'])
     total_user_count = df_user_input.count()
     print("total_user_count: {}".format(total_user_count))
 
     df_user_input.coalesce(1).write.mode("overwrite").option(
-        "header", "false").option("sep", "_!_").csv(emr_user_output_bucket_key_prefix)
+        "header", "true").csv(emr_user_output_bucket_key_prefix)
 
 emr_user_output_file_key = list_s3_by_prefix(
     bucket,

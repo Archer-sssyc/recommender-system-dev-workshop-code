@@ -5,7 +5,7 @@ set -e
 echo "------------------------------------------------ "
 Stage=$1
 if [[ -z $Stage ]];then
-  Stage='dev'
+  Stage='dev-workshop'
 fi
 
 echo "Stage=$Stage"
@@ -55,7 +55,8 @@ movie_projects=(
   "model-update-ub"
   "portrait-batch"
   "item-feature-update-batch"
-  "add-item-user-batch"
+  "add-item-batch"
+  "add-user-batch"
   "weight-update-batch"
   "step-funcs"
 )

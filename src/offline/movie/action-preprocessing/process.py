@@ -93,57 +93,57 @@ with SparkSession.builder.appName("Spark App - action preprocessing").getOrCreat
     #
     # read item file
     #
-    df_item = spark.read.text(item_file)
-    df_item = df_item.selectExpr("split(value, '_!_') as row") \
-        .selectExpr("row[0] as program_id",
-                    "row[1] as program_type",
-                    "row[2] as program_name",
-                    "row[3] as release_year",
-                    "row[4] as director",
-                    "row[5] as actor",
-                    "row[6] as category_property",  # or genres
-                    "row[7] as language",
-                    "row[8] as ticket_num",
-                    "row[9] as popularity",
-                    "row[10] as score",
-                    "row[11] as level",
-                    "row[12] as is_new"
-                    ).dropDuplicates(["program_id"])
+    df_item = spark.read.csv(item_file)
+    # df_item = df_item.selectExpr("split(value, '_!_') as row") \
+    #     .selectExpr("row[0] as program_id",
+    #                 "row[1] as program_type",
+    #                 "row[2] as program_name",
+    #                 "row[3] as release_year",
+    #                 "row[4] as director",
+    #                 "row[5] as actor",
+    #                 "row[6] as category_property",  # or genres
+    #                 "row[7] as language",
+    #                 "row[8] as ticket_num",
+    #                 "row[9] as popularity",
+    #                 "row[10] as score",
+    #                 "row[11] as level",
+    #                 "row[12] as is_new"
+    #                 ).dropDuplicates(["program_id"])
     df_item.cache()
     total_item_count = df_item.count()
     print("total_item_count: {}".format(total_item_count))
-    df_item_id = df_item.select("program_id")
+    df_item_id = df_item.select("card_song_id")
 
     #
     # read user file
     #
-    df_user_input = spark.read.text(user_file)
+    df_user_input = spark.read.csv(user_file)
     # 2361_!_M_!_57_!_1608411863_!_gutturalPie9
-    df_user_input = df_user_input.selectExpr("split(value, '_!_') as row").where(
-        size(col("row")) > 4).selectExpr("row[0] as user_id",
-                                         "row[1] as sex",
-                                         "row[2] as age",
-                                         "row[3] as timestamp",
-                                         "row[4] as name",
-                                         )
+    # df_user_input = df_user_input.selectExpr("split(value, '_!_') as row").where(
+    #     size(col("row")) > 4).selectExpr("row[0] as user_id",
+    #                                      "row[1] as sex",
+    #                                      "row[2] as age",
+    #                                      "row[3] as timestamp",
+    #                                      "row[4] as name",
+    #                                      )
 
     #
     # process action file
     #
     print("start processing action file: {}".format(input_action_file))
     # 18892_!_534_!_1617862565_!_1_!_0_!_1
-    df_action_input = spark.read.text(input_action_file)
-    df_action_input = df_action_input.selectExpr("split(value, '_!_') as row").where(
-        size(col("row")) > 5).selectExpr("row[0] as user_id",
-                                         "row[1] as item_id",
-                                         "row[2] as timestamp",
-                                         "cast(row[3] as string) as action_type",
-                                         "row[4] as action_value",
-                                         "row[5] as click_source",
-                                         )
+    df_action_input = spark.read.csv(input_action_file)
+    # df_action_input = df_action_input.selectExpr("split(value, '_!_') as row").where(
+    #     size(col("row")) > 5).selectExpr("row[0] as user_id",
+    #                                      "row[1] as item_id",
+    #                                      "row[2] as timestamp",
+    #                                      "cast(row[3] as string) as action_type",
+    #                                      "row[4] as action_value",
+    #                                      "row[5] as click_source",
+    #                                      )
 
-    df_action_input = df_action_input.join(df_item_id, df_action_input["item_id"] == df_item_id["program_id"], "inner") \
-        .select("user_id", "item_id", "action_type", "action_value", "timestamp")
+    df_action_input = df_action_input.join(df_item_id, df_action_input["card_song_id"] == df_item_id["card_song_id"], "inner") \
+        .select("user_id", "item_id", "label", "time")
     df_action_input.cache()
     total_action_count = df_action_input.count()
     print("after jon df_item, total_action_count: {}".format(total_action_count))
@@ -152,14 +152,14 @@ with SparkSession.builder.appName("Spark App - action preprocessing").getOrCreat
     # filter the user_id that not in df_user_input
     #
     df_action_input = df_action_input.withColumnRenamed("user_id", "action_user_id")
-    df_user_input = df_user_input.withColumnRenamed("timestamp", "user_timestamp")
+    df_user_input = df_user_input.withColumnRenamed("time", "user_timestamp")
     df_action_input.join(df_user_input, df_action_input['action_user_id'] == df_user_input['user_id'], "inner") \
-        .select('user_id', "item_id", "action_type", "action_value", "timestamp")
+        .select('user_id', "card_song_id", "label", "time")
     total_action_count = df_action_input.count()
     print("after jon df_user_input, total_action_count: {}".format(total_action_count))
 
     df_action_input.coalesce(1).write.mode("overwrite").option(
-        "header", "false").option("sep", "_!_").csv(emr_action_output_bucket_key_prefix)
+        "header", "true").csv(emr_action_output_bucket_key_prefix)
 
 emr_action_output_file_key = list_s3_by_prefix(
     bucket,
