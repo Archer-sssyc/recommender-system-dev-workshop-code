@@ -56,7 +56,7 @@ print(f"bucket:{bucket}, prefix:{prefix}")
 
 s3client = boto3.client('s3')
 
-input_user_file = "s3://{}/{}/system/ingest-data/user/".format(bucket, prefix)
+input_user_file = "s3://{}/{}/system/ingest-data/user/user.csv".format(bucket, prefix)
 emr_user_output_key_prefix = "{}/system/emr/action-preprocessing/output/user".format(
     prefix)
 emr_user_output_bucket_key_prefix = "s3://{}/{}".format(

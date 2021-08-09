@@ -42,20 +42,7 @@ def write_str_to_s3(content, bucket, key):
 
 
 def prepare_df(item_path):
-    return pd.read_csv(item_path, sep="_!_", names=[
-        "program_id",
-        "program_type",
-        "program_name",
-        "release_year",
-        "director",
-        "actor",
-        "category_property",
-        "language",
-        "ticket_num",
-        "popularity",
-        "score",
-        "level",
-        "is_new"])
+    return pd.read_csv(item_path)
 
 
 def get_actor(actor_str):
