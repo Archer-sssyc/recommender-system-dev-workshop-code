@@ -190,7 +190,7 @@ def gen_movie_properties_to_movie_ids_dict(df):
     for row in df.iterrows():
         item_row = row[1]
         # program_id = {"id": item_row['program_id'], "score": item_row['cal_score'] }
-        program_id = item_row['program_id']
+        program_id = item_row['card_song_id']
         for key in [item for item in get_single_item(item_row['c_singer_sex']) if item is not None]:
             card_sex_card_ids_dict.setdefault(key, []).append(program_id)
 
