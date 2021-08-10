@@ -53,7 +53,7 @@ print(f"bucket:{bucket}, prefix:{prefix}")
 # input_prefix=recommender-system-news-open-toutiao/system/item-data/raw-input/
 # output_prefix=recommender-system-news-open-toutiao/system/item-data/emr-out/
 
-input_file = "s3://{}/{}/system/ingest-data/item/".format(bucket, prefix)
+input_file = "s3://{}/{}/system/ingest-data/item/item.csv".format(bucket, prefix)
 emr_output_key_prefix = "{}/system/emr/item-preprocessing/output/".format(prefix)
 emr_output_bucket_key_prefix = "s3://{}/{}".format(bucket, emr_output_key_prefix)
 
@@ -103,7 +103,7 @@ with SparkSession.builder.appName("Spark App - item preprocessing").getOrCreate(
     #                                                              "level",
     #                                                              "min(is_new_int)"
     #                                                              ).dropDuplicates(["program_id"])
-    df_final.coalesce(1).write.mode("overwrite").option(
+    df_input.coalesce(1).write.mode("overwrite").option(
         "header", "ture").csv(emr_output_bucket_key_prefix)
 
     print("It take {:.2f} minutes to finish".format(
