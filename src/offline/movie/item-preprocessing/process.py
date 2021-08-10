@@ -47,6 +47,7 @@ if prefix.endswith("/"):
     prefix = prefix[:-1]
 
 
+s3client = boto3.client('s3')
 
 print(f"bucket:{bucket}, prefix:{prefix}")
 
@@ -68,7 +69,7 @@ with SparkSession.builder.appName("Spark App - item preprocessing").getOrCreate(
     #
     # process item file
     #
-
+    
     df_input = spark.read.csv(input_file, header=True)
     # program_id|program_type|program_name|release_year|director|actor|category_property|language|ticket_num|popularity|score|level|new_series
     # df_input = df_input.selectExpr("split(value, '_!_') as row").where(

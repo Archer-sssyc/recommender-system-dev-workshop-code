@@ -24,10 +24,10 @@ JOB_NAME=${repo_name}-${TIMESTAMP}-${RANDOM}
 JOB_NAME=$(echo $JOB_NAME | sed 's/\//-/g')
 echo "JOB_NAME: ${JOB_NAME}"
 
-IMAGEURI=${account_id}.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo_name}:latest
-SM_ROLE=arn:aws:iam::${account_id}:role/service-role/rs-dev-SMRole-${AWS_REGION}
+IMAGEURI=${account_id}.dkr.ecr.${AWS_REGION}.amazonaws.com/${repo_name}:dev-workshop
+SM_ROLE=arn:aws:iam::${account_id}:role/service-role/rs-dev-workshop-SMRole-${AWS_REGION}
 
-bucket=aws-gcr-rs-sol-demo-${AWS_REGION}-${account_id}
+bucket=aws-gcr-rs-sol-dev-workshop-${AWS_REGION}-${account_id}
 prefix=sample-data-movie
 
 aws sagemaker --profile ${AWS_PROFILE} --region  ${AWS_REGION}   create-processing-job \
