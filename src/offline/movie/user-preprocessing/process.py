@@ -97,3 +97,4 @@ s3_copy(bucket, emr_user_output_file_key, output_user_file_key)
 print("output_user_file_key:", output_user_file_key)
 
 print("All done")
+print("this is a test log")
