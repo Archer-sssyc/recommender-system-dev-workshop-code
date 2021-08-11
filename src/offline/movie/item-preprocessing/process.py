@@ -106,7 +106,7 @@ with SparkSession.builder.appName("Spark App - item preprocessing").getOrCreate(
     #                                                              "min(is_new_int)"
     #                                                              ).dropDuplicates(["program_id"])
     df_input.coalesce(1).write.mode("overwrite").option(
-        "header", "ture").csv(emr_output_bucket_key_prefix)
+        "header", "true").csv(emr_output_bucket_key_prefix)
 
     print("It take {:.2f} minutes to finish".format(
         (time.time() - Timer1) / 60))
