@@ -96,6 +96,7 @@ s3_folder = '{}/system/item-data/'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 
 df = prepare_df("info/item.csv")
+df['card_song_id'] = df['card_song_id'].values.astype('int64')
 
 movie_id_movie_property_data = {}
 row_cnt = 0
