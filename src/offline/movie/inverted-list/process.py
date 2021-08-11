@@ -203,10 +203,10 @@ def gen_movie_properties_to_movie_ids_dict(df):
         for key in [item for item in get_single_item(item_row['c_singer_country']) if item is not None]:
             card_country_card_ids_dict.setdefault(key, []).append(program_id)
 
-        for key in [item for item in get_category(item_row['c_song_name']) if item is not None]:
+        for key in [item for item in get_single_item(item_row['c_song_name']) if item is not None]:
             card_name_card_ids_dict.setdefault(key, []).append(program_id)
 
-        for key in [item for item in get_actor(item_row['c_song_artist']) if item is not None]:
+        for key in [item for item in get_single_item(item_row['c_song_artist']) if item is not None]:
             card_artist_card_ids_dict.setdefault(key, []).append(program_id)
 
     result_dict = {
