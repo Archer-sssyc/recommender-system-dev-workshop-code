@@ -112,7 +112,7 @@ with SparkSession.builder.appName("Spark App - action preprocessing").getOrCreat
     df_item.cache()
     total_item_count = df_item.count()
     print("total_item_count: {}".format(total_item_count))
-    df_item_id = df_item.select("card_song_id")
+    df_item_id = df_item.select("card_song_id").selectExpr("card_song_id as item_id")
 
     #
     # read user file
