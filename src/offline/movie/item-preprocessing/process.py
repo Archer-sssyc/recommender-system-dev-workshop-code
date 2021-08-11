@@ -60,6 +60,7 @@ emr_output_bucket_key_prefix = "s3://{}/{}".format(bucket, emr_output_key_prefix
 
 output_file_key = "{}/system/item-data/item.csv".format(prefix)
 
+print("before spark")
 with SparkSession.builder.appName("Spark App - item preprocessing").getOrCreate() as spark:
     # This is needed to save RDDs which is the only way to write nested Dataframes into CSV format
     # spark.sparkContext._jsc.hadoopConfiguration().set("mapred.output.committer.class",
@@ -69,7 +70,7 @@ with SparkSession.builder.appName("Spark App - item preprocessing").getOrCreate(
     #
     # process item file
     #
-    
+    print("spark reading")
     df_input = spark.read.csv(input_file, header=True)
     # program_id|program_type|program_name|release_year|director|actor|category_property|language|ticket_num|popularity|score|level|new_series
     # df_input = df_input.selectExpr("split(value, '_!_') as row").where(
