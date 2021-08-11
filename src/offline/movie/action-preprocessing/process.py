@@ -93,7 +93,7 @@ with SparkSession.builder.appName("Spark App - action preprocessing").getOrCreat
     #
     # read item file
     #
-    df_item = spark.read.csv(item_file)
+    df_item = spark.read.csv(item_file, header=True)
     # df_item = df_item.selectExpr("split(value, '_!_') as row") \
     #     .selectExpr("row[0] as program_id",
     #                 "row[1] as program_type",
@@ -117,7 +117,7 @@ with SparkSession.builder.appName("Spark App - action preprocessing").getOrCreat
     #
     # read user file
     #
-    df_user_input = spark.read.csv(user_file)
+    df_user_input = spark.read.csv(user_file, header=True)
     # 2361_!_M_!_57_!_1608411863_!_gutturalPie9
     # df_user_input = df_user_input.selectExpr("split(value, '_!_') as row").where(
     #     size(col("row")) > 4).selectExpr("row[0] as user_id",
@@ -132,7 +132,7 @@ with SparkSession.builder.appName("Spark App - action preprocessing").getOrCreat
     #
     print("start processing action file: {}".format(input_action_file))
     # 18892_!_534_!_1617862565_!_1_!_0_!_1
-    df_action_input = spark.read.csv(input_action_file)
+    df_action_input = spark.read.csv(input_action_file, header=True)
     # df_action_input = df_action_input.selectExpr("split(value, '_!_') as row").where(
     #     size(col("row")) > 5).selectExpr("row[0] as user_id",
     #                                      "row[1] as item_id",
