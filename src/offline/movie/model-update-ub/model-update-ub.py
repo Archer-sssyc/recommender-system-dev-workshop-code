@@ -109,7 +109,7 @@ item_ids = item_ids.astype('str')
 # 加载所有人的数据
 data_mk = pd.read_csv('info/action.csv')
 
-data_tt = data_mk.rename(columns={'label': 'rating'})
+data_tt = data_mk.rename(columns={'label': 'rating', 'action_user_id': 'user_id'})
 data_tt = data_tt.astype('str')
 print("before join user_ids/item_ids, len data_tt:", len(data_tt))
 
