@@ -142,7 +142,7 @@ with SparkSession.builder.appName("Spark App - action preprocessing").getOrCreat
     #                                      "row[5] as click_source",
     #                                      )
 
-    df_action_input = df_action_input.join(df_item_id, df_action_input["card_song_id"] == df_item_id["card_song_id"], "inner") \
+    df_action_input = df_action_input.join(df_item_id, df_action_input["card_song_id"] == df_item_id["item_id"], "inner") \
         .select("user_id", "card_song_id", "label", "time")
     df_action_input.cache()
     total_action_count = df_action_input.count()
