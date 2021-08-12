@@ -48,7 +48,9 @@ def write_str_to_s3(content, bucket, key):
 
 
 def prepare_df(item_path):
-    return pd.read_csv(item_path)
+    df = pd.read_csv(item_path)
+    df['card_song_id'] = df['card_song_id'].values.astype('int64')
+    return df
 
 
 def get_actor(actor_str):
