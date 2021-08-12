@@ -102,19 +102,18 @@ file_name_list = ['user_embeddings.h5']
 s3_folder = '{}/model/recall/youtubednn/'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 # 倒排列表的pickle文件
-file_name_list = ['movie_id_movie_feature_dict.pickle']
+file_name_list = ['card_id_card_feature_dict.pickle']
 s3_folder = '{}/feature/content/inverted-list/'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 
 # 加载所有人的数据
-action_data_pddf = pd.read_csv('info/train_action.csv', sep='_!_',
-                               names=['user_id', 'item_id', 'action_type', 'action_value', 'timestamp'])
+action_data_pddf = pd.read_csv('info/train_action.csv').rename(columns={'label': 'rating', 'action_user_id': 'user_id', 'card_song_id': 'item_id'})
 print("load {} action data".format(len(action_data_pddf)))
 
 # 加载pickle文件
-file_to_load = open("info/movie_id_movie_feature_dict.pickle", "rb")
+file_to_load = open("info/card_id_card_feature_dict.pickle", "rb")
 dict_id_feature_pddf = pd.read_pickle(file_to_load)
-print("length of movie_id v.s. movie_property {}".format(len(dict_id_feature_pddf)))
+print("length of card_id v.s. card_property {}".format(len(dict_id_feature_pddf)))
 file_to_load = open("info/raw_embed_item_mapping.pickle", "rb")
 raw_embed_item_mapping = pickle.load(file_to_load)
 file_to_load = open("info/raw_embed_user_mapping.pickle", "rb")
@@ -123,15 +122,15 @@ raw_embed_user_mapping = pickle.load(file_to_load)
 user_embedding_model = load_model('info/user_embeddings.h5', custom_objects)
 embed_dim = 32
 
-sample_data_pddf = action_data_pddf[['action_value', 'user_id', 'item_id', 'timestamp']]
-sample_data_pddf.sort_values('timestamp', inplace=True)
+sample_data_pddf = action_data_pddf[['rating', 'user_id', 'item_id', 'time']]
+sample_data_pddf.sort_values('time', inplace=True)
 
-sample_data_pddf_click = sample_data_pddf[sample_data_pddf['action_value'] == 1]
+sample_data_pddf_click = sample_data_pddf[sample_data_pddf['rating'] == 1]
 user_click_record = {}
 for reviewerID, hist in tqdm(sample_data_pddf_click.groupby('user_id')):
     current_user_time_list = {}
     pos_list = hist['item_id'].tolist()
-    time_list = hist['timestamp'].tolist()
+    time_list = hist['time'].tolist()
     for idx, t in enumerate(time_list):
         current_user_time_list[t] = pos_list[idx:]
     user_click_record[str(reviewerID)] = current_user_time_list
@@ -160,7 +159,7 @@ def min_max_norm(raw_list):
 
 def user_embed_func(x, user_click_record=user_click_record, user_embedding_model=user_embedding_model,
                     dict_item_mapping=raw_embed_item_mapping, dict_user_mapping=raw_embed_user_mapping):
-    current_time_stamp = x['timestamp']
+    current_time_stamp = x['time']
     if str(x['user_id']) in user_click_record.keys() and str(x['user_id']) in dict_user_mapping:
         current_click_record = user_click_record[str(x['user_id'])]
         #         last_ts = list(current_click_record.keys())[0]
@@ -182,7 +181,7 @@ def user_embed_func(x, user_click_record=user_click_record, user_embedding_model
                 map_input_item_list[0][cnt] = dict_item_mapping[str(item)]
         model_input = {}
         model_input['user_id'] = np.array([int(map_user_id)])
-        model_input['hist_movie_id'] = map_input_item_list
+        model_input['hist_card_song_id'] = map_input_item_list
         model_input['hist_len'] = np.array([watch_len])
 
         # 更新用户的embeddings
@@ -196,14 +195,15 @@ def user_embed_func(x, user_click_record=user_click_record, user_embedding_model
         return [0] * embed_dim
 
 
-dict_id_feature_pddf['programId'] = dict_id_feature_pddf['programId'].astype(int)
+dict_id_feature_pddf['card_song_id'] = dict_id_feature_pddf['card_song_id'].astype(int)
 
 sample_data_pddf = pd.merge(left=sample_data_pddf, right=dict_id_feature_pddf.drop_duplicates(), how='left',
-                            left_on='item_id', right_on='programId')
+                            left_on='item_id', right_on='card_song_id')
 
 # user id feature - user embedding
 print("根据user_id的历史记录生成userid_feat（嵌入）")
 # sample_data_pddf['userid_feat'] = sample_data_pddf.progress_apply(user_embed_func, axis=1)
+sample_data_pddf['userid_feat'] = sample_data_pddf.apply(user_embed_func, axis=1)
 sample_data_pddf['userid_feat'] = sample_data_pddf.apply(user_embed_func, axis=1)
 
 print("将{}维用户嵌入转化为不同的连续型feature".format(embed_dim))
@@ -242,7 +242,7 @@ with open(output_dir + 'tr.libsvm', 'w') as out_train:
                 #                 val = dicts.gen(i, features[mk_sparse_features[i]]) + categorial_feature_offset[i]
                 feat_vals.append(str(item_row[mk_sparse_features[i]]) + ':1')
 
-            label = item_row['action_value']
+            label = item_row['rating']
             if random.randint(0, 9999) % 10 != 0:
                 out_train.write("{0} {1}\n".format(label, ' '.join(feat_vals)))
             else:
@@ -261,7 +261,7 @@ with open(output_dir + 'te.libsvm', 'w') as out_test:
             #                 val = dicts.gen(i, features[mk_sparse_features[i]]) + categorial_feature_offset[i]
             feat_vals.append(str(item_row[mk_sparse_features[i]]) + ':1')
 
-        label = item_row['action_value']
+        label = item_row['rating']
         out_test.write("{0} {1}\n".format(label, ' '.join(feat_vals)))
 
 # tar = tarfile.open("model.tar.gz", "w:gz")
