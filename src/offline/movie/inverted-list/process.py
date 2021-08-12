@@ -83,8 +83,10 @@ def get_bucket_key_from_s3_path(s3_path):
     return m.group(1), m.group(2)
 
 
-def prepare_df(item_s3_path):
-    return pd.read_csv(item_s3_path)
+def prepare_df(item_path):
+    df = pd.read_csv(item_path)
+    df['card_song_id'] = df['card_song_id'].values.astype('int64')
+    return df
 
 
 def gen_pickle_files(item_file_path, out_s3_path):
