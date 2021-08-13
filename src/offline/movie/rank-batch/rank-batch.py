@@ -120,7 +120,7 @@ data_input_pddf = pd.DataFrame.from_dict(data_input_pddf_dict)
 
 data_input_pddf['item_id'] = data_input_pddf['item_id'].astype(int)
 
-dict_id_feature_pddf['item_id'] = dict_id_feature_pddf['item_id'].astype(int)
+dict_id_feature_pddf['item_id'] = dict_id_feature_pddf['card_song_id'].astype(int)
 
 data_input_pddf = pd.merge(left=data_input_pddf, right=dict_id_feature_pddf.drop_duplicates(), how='left',
                            left_on='item_id', right_on='item_id')
