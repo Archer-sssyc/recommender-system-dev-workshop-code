@@ -80,22 +80,21 @@ file_name_list = ['portrait.pickle']
 s3_folder = '{}/feature/recommend-list/portrait'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 # 倒排列表的pickle文件
-file_name_list = ['movie_id_movie_property_dict.pickle']
+file_name_list = ['card_id_card_property_dict.pickle']
 s3_folder = '{}/feature/content/inverted-list/'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 
 # 加载用户数据
 user_click_records = {}
 
-data_mk = pd.read_csv('info/action.csv', sep='_!_',
-                      names=['user_id', 'programId', 'action_type', 'action_value', 'timestamp'])
+data_mk = pd.read_csv('info/action.csv').rename(columns={'label': 'rating', 'action_user_id': 'user_id', 'card_song_id': 'item_id'})
 
-for reviewerID, hist in tqdm(data_mk[data_mk['action_value'] == 1].groupby('user_id')):
-    pos_list = hist['programId'].tolist()
+for reviewerID, hist in tqdm(data_mk[data_mk['rating'] == 1].groupby('user_id')):
+    pos_list = hist['item_id'].tolist()
     user_click_records[reviewerID] = pos_list
 # 加载pickle文件
 
-file_to_load = open("info/movie_id_movie_property_dict.pickle", "rb")
+file_to_load = open("info/card_id_card_property_dict.pickle", "rb")
 dict_id_content = pickle.load(file_to_load)
 
 file_to_load = open("info/raw_embed_item_mapping.pickle", "rb")
@@ -149,8 +148,7 @@ def update_portrait_under_a_property(mt_content, mt_up, ratio):
 # 'embedding':{'review':xxx,'photo':xxx,'ub':xxx}
 ########################################
 def initial_one_user_portrait():
-    popularity_method_list = ['category', 'director',
-                              'actor', 'language']
+    popularity_method_list = ['c_song_name', 'c_song_artist']
     current_user_portrait = {}
     for mt in popularity_method_list:
         current_user_portrait[mt] = {}
@@ -162,8 +160,7 @@ def initial_one_user_portrait():
 
 def initial_user_portrait(user_list):
     user_data_frame = {}
-    popularity_method_list = ['category', 'director',
-                              'actor', 'language']
+    popularity_method_list = ['c_song_name', 'c_song_artist']
     for user in user_list:
         user_data_frame[str(user)] = initial_one_user_portrait()
     #     col_name = ['user_id']+popularity_method_list
@@ -198,8 +195,7 @@ def update_user_portrait_with_one_click(current_user_portrait, current_read_item
     # 用户兴趣衰减系数
     decay_ratio = 0.8
 
-    popularity_method_list = ['category', 'director',
-                              'actor', 'language']
+    popularity_method_list = ['c_song_name', 'c_song_artist']
 
     for mt in popularity_method_list:
         if current_user_portrait.get(mt) is None:
@@ -235,7 +231,7 @@ def update_user_embedding(user_id, input_item_list):
             map_input_item_list[0][cnt] = dict_item_mapping[str(item)]
     model_input = {}
     model_input['user_id'] = np.array([int(map_user_id)])
-    model_input['hist_movie_id'] = map_input_item_list
+    model_input['hist_card_song_id'] = map_input_item_list
     model_input['hist_len'] = np.array([watch_len])
 
     # 更新用户的embeddings
@@ -251,7 +247,10 @@ def update_user_embedding(user_id, input_item_list):
 
 
 file_to_load = open("info/portrait.pickle", "rb")
-dict_user_portrait = pickle.load(file_to_load)
+try:
+    dict_user_portrait = pickle.load(file_to_load)
+except:
+    dict_user_portrait = {}
 print("update user portrait for batch users")
 for user_id, input_item_list in user_click_records.items():
     if str(user_id) not in dict_user_mapping:
