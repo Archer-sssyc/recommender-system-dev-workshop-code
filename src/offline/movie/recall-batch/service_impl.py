@@ -75,11 +75,11 @@ class ServiceImpl:
                 single_recall_result = {}
                 current_list_with_score = []
                 if current_prop[0] != None:
-                    for prop in current_prop:
-                        current_list_with_score = current_list_with_score + \
-                                                  self.recall_pos_score(src_item,
-                                                                        dict_wrap[mt][prop][0:topn_wrap[mt]],
-                                                                        weights[mt], multiple_shot_record)
+                    # for prop in current_prop:
+                    current_list_with_score = current_list_with_score + \
+                                              self.recall_pos_score(src_item,
+                                                                    dict_wrap[mt][current_prop][0:topn_wrap[mt]],
+                                                                    weights[mt], multiple_shot_record)
                     single_recall_result['method'] = mt
                     single_recall_result['list'] = current_list_with_score
                     logging.info("method {} find {} candidates".format(
@@ -156,8 +156,8 @@ class ServiceImpl:
         # 根据用户画像做召回
         self.recall_by_portrait(user_portrait, recall_wrap, recall_items, multiple_shot_record)
 
-        # recall_merge_cnt = 100
-        n_last_len = recall_wrap['config']['merge_cnt']
+        recall_merge_cnt = 100
+        # n_last_len = recall_wrap['config']['merge_cnt']
         method_weights = recall_wrap['config']['mt_weights']
         raw_item_list = {}
 
@@ -193,7 +193,7 @@ class ServiceImpl:
         recall_result = {}
 
         # 截取前recall_merge_cnt的结果作为recall的结果
-        recall_result = dict(itertools.islice(sort_item_list.items(), n_last_len))
+        recall_result = dict(itertools.islice(sort_item_list.items(), recall_merge_cnt))
 
         logging.info('Recall has done & return -> {}'.format(recall_result))
         return recall_result
