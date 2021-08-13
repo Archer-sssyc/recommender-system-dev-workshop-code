@@ -148,7 +148,7 @@ def update_portrait_under_a_property(mt_content, mt_up, ratio):
 # 'embedding':{'review':xxx,'photo':xxx,'ub':xxx}
 ########################################
 def initial_one_user_portrait():
-    popularity_method_list = ['name', 'artist']
+    popularity_method_list = ['c_song_name', 'c_song_artist']
     current_user_portrait = {}
     for mt in popularity_method_list:
         current_user_portrait[mt] = {}
@@ -160,7 +160,7 @@ def initial_one_user_portrait():
 
 def initial_user_portrait(user_list):
     user_data_frame = {}
-    popularity_method_list = ['name', 'artist']
+    popularity_method_list = ['c_song_name', 'c_song_artist']
     for user in user_list:
         user_data_frame[str(user)] = initial_one_user_portrait()
     #     col_name = ['user_id']+popularity_method_list
@@ -195,7 +195,7 @@ def update_user_portrait_with_one_click(current_user_portrait, current_read_item
     # 用户兴趣衰减系数
     decay_ratio = 0.8
 
-    popularity_method_list = ['name', 'artist']
+    popularity_method_list = ['c_song_name', 'c_song_artist']
 
     for mt in popularity_method_list:
         if current_user_portrait.get(mt) is None:
