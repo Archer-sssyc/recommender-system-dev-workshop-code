@@ -76,13 +76,13 @@ file_name_list = ['portrait.pickle']
 s3_folder = '{}/feature/recommend-list/portrait'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 # 倒排列表的pickle文件
-file_name_list = ['movie_id_movie_property_dict.pickle',
-                  'movie_category_movie_ids_dict.pickle',
-                  'movie_director_movie_ids_dict.pickle',
-                  'movie_actor_movie_ids_dict.pickle',
-                  'movie_language_movie_ids_dict.pickle',
-                  'movie_level_movie_ids_dict.pickle',
-                  'movie_year_movie_ids_dict.pickle']
+file_name_list = ['card_id_card_property_dict',
+                  'card_sex_card_ids_dict',
+                  'card_user_card_ids_dict',
+                  'card_age_card_ids_dict',
+                  'card_country_card_ids_dict',
+                  'card_name_card_ids_dict',
+                  'card_artist_card_ids_dict']
 s3_folder = '{}/feature/content/inverted-list/'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 
@@ -91,33 +91,33 @@ s3_folder = '{}/model/recall'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 
 # 加载pickle文件
-file_to_load = open("info/movie_id_movie_property_dict.pickle", "rb")
+file_to_load = open("info/card_id_card_property_dict.pickle", "rb")
 dict_id_content = pickle.load(file_to_load)
-print("length of movie_id v.s. movie_property {}".format(len(dict_id_content)))
+print("length of card_id v.s. card_property {}".format(len(dict_id_content)))
 
-file_to_load = open("info/movie_category_movie_ids_dict.pickle", "rb")
-dict_category_id = pickle.load(file_to_load)
-print("length of movie_category v.s. movie_ids {}".format(len(dict_category_id)))
+file_to_load = open("info/card_sex_card_ids_dict", "rb")
+dict_sex_id = pickle.load(file_to_load)
+print("length of card_sex v.s. card_ids {}".format(len(dict_sex_id)))
 
-file_to_load = open("info/movie_director_movie_ids_dict.pickle", "rb")
-dict_director_id = pickle.load(file_to_load)
-print("length of movie_dicrector v.s. movie_ids {}".format(len(dict_director_id)))
+file_to_load = open("info/card_user_card_ids_dict.pickle", "rb")
+dict_user_id = pickle.load(file_to_load)
+print("length of card_dicrector v.s. card_ids {}".format(len(dict_user_id)))
 
-file_to_load = open("info/movie_actor_movie_ids_dict.pickle", "rb")
-dict_actor_id = pickle.load(file_to_load)
-print("length of movie_actor v.s. movie_ids {}".format(len(dict_actor_id)))
+file_to_load = open("info/card_age_card_ids_dict.pickle", "rb")
+dict_age_id = pickle.load(file_to_load)
+print("length of card_age v.s. card_ids {}".format(len(dict_age_id)))
 
-file_to_load = open("info/movie_language_movie_ids_dict.pickle", "rb")
-dict_language_id = pickle.load(file_to_load)
-print("length of movie_lanugage v.s. movie_ids {}".format(len(dict_language_id)))
+file_to_load = open("info/card_country_card_ids_dict.pickle", "rb")
+dict_country_id = pickle.load(file_to_load)
+print("length of card_country v.s. card_ids {}".format(len(dict_country_id)))
 
-file_to_load = open("info/movie_level_movie_ids_dict.pickle", "rb")
-dict_level_id = pickle.load(file_to_load)
-print("length of movie_level v.s. movie_ids {}".format(len(dict_level_id)))
+file_to_load = open("info/card_name_card_ids_dict", "rb")
+dict_name_id = pickle.load(file_to_load)
+print("length of card_name v.s. card_ids {}".format(len(dict_name_id)))
 
-file_to_load = open("info/movie_year_movie_ids_dict.pickle", "rb")
-dict_year_id = pickle.load(file_to_load)
-print("length of movie_year v.s. movie_ids {}".format(len(dict_year_id)))
+file_to_load = open("info/card_artist_card_ids_dict.pickle", "rb")
+dict_artist_id = pickle.load(file_to_load)
+print("length of card_artist v.s. card_ids {}".format(len(dict_artist_id)))
 
 file_to_load = open("info/recall_config.pickle", "rb")
 recall_config = pickle.load(file_to_load)
@@ -138,20 +138,19 @@ config_dict = {}
 recall_wrap = {}
 recall_wrap['content'] = dict_id_content
 recall_wrap['dict_wrap'] = {}
-recall_wrap['dict_wrap']['category'] = dict_category_id
-recall_wrap['dict_wrap']['director'] = dict_director_id
-recall_wrap['dict_wrap']['actor'] = dict_actor_id
-recall_wrap['dict_wrap']['language'] = dict_language_id
-recall_wrap['dict_wrap']['level'] = dict_level_id
-recall_wrap['dict_wrap']['year'] = dict_year_id
+recall_wrap['dict_wrap']['c_singer_sex'] = dict_sex_id
+recall_wrap['dict_wrap']['c_singer_user_id'] = dict_user_id
+recall_wrap['dict_wrap']['c_singer_age'] = dict_age_id
+recall_wrap['dict_wrap']['c_singer_country'] = dict_country_id
+recall_wrap['dict_wrap']['c_song_name'] = dict_name_id
+recall_wrap['dict_wrap']['c_song_artist'] = dict_artist_id
 recall_wrap['config'] = recall_config
 config_dict['recall_wrap'] = recall_wrap
 recall_wrap['ub_index'] = ub_faiss_index
 recall_wrap['ub_idx_mapping'] = ub_idx_mapping
 # 加载所有人的数据
 
-action_data_pddf = pd.read_csv('info/action.csv', sep='_!_',
-                               names=['user_id', 'programId', 'action_type', 'action_value', 'timestamp'])
+action_data_pddf = pd.read_csv('info/action.csv').rename(columns={'label': 'rating', 'action_user_id': 'user_id', 'card_song_id': 'item_id'})
 
 print("load {} action data".format(len(action_data_pddf)))
 # 初始化recall结果
@@ -159,8 +158,8 @@ recall_batch_result = {}
 # print(config_dict)
 recall_batch_function = service_impl.ServiceImpl()
 for reviewerID, hist in tqdm(
-        action_data_pddf[action_data_pddf['action_value'] == 1].groupby('user_id')):
-    pos_list = hist['programId'].tolist()
+        action_data_pddf[action_data_pddf['rating'] == 1].groupby('user_id')):
+    pos_list = hist['item_id'].tolist()
     if str(reviewerID) not in user_portrait:
         logging.warning("Cannot find {} in user_portrait".format(reviewerID))
         continue
