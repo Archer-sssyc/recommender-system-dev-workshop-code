@@ -76,13 +76,13 @@ file_name_list = ['portrait.pickle']
 s3_folder = '{}/feature/recommend-list/portrait'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 # 倒排列表的pickle文件
-file_name_list = ['card_id_card_property_dict',
-                  'card_sex_card_ids_dict',
-                  'card_user_card_ids_dict',
-                  'card_age_card_ids_dict',
-                  'card_country_card_ids_dict',
-                  'card_name_card_ids_dict',
-                  'card_artist_card_ids_dict']
+file_name_list = ['card_id_card_property_dict.pickle',
+                  'card_sex_card_ids_dict.pickle',
+                  'card_user_card_ids_dict.pickle',
+                  'card_age_card_ids_dict.pickle',
+                  'card_country_card_ids_dict.pickle',
+                  'card_name_card_ids_dict.pickle',
+                  'card_artist_card_ids_dict.pickle']
 s3_folder = '{}/feature/content/inverted-list/'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 
@@ -95,7 +95,7 @@ file_to_load = open("info/card_id_card_property_dict.pickle", "rb")
 dict_id_content = pickle.load(file_to_load)
 print("length of card_id v.s. card_property {}".format(len(dict_id_content)))
 
-file_to_load = open("info/card_sex_card_ids_dict", "rb")
+file_to_load = open("info/card_sex_card_ids_dict.pickle", "rb")
 dict_sex_id = pickle.load(file_to_load)
 print("length of card_sex v.s. card_ids {}".format(len(dict_sex_id)))
 
@@ -111,7 +111,7 @@ file_to_load = open("info/card_country_card_ids_dict.pickle", "rb")
 dict_country_id = pickle.load(file_to_load)
 print("length of card_country v.s. card_ids {}".format(len(dict_country_id)))
 
-file_to_load = open("info/card_name_card_ids_dict", "rb")
+file_to_load = open("info/card_name_card_ids_dict.pickle", "rb")
 dict_name_id = pickle.load(file_to_load)
 print("length of card_name v.s. card_ids {}".format(len(dict_name_id)))
 
