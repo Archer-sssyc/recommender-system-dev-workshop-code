@@ -76,7 +76,7 @@ file_name_list = ['portrait.pickle']
 s3_folder = '{}/feature/recommend-list/portrait'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 # 倒排列表的pickle文件
-file_name_list = ['movie_id_movie_feature_dict.pickle']
+file_name_list = ['card_id_card_feature_dict.pickle']
 s3_folder = '{}/feature/content/inverted-list/'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 # deepfm模型文件下载
@@ -89,9 +89,9 @@ file_to_load = open("info/recall_batch_result.pickle", "rb")
 recall_batch_result = pickle.load(file_to_load)
 file_to_load = open("info/portrait.pickle", "rb")
 user_portrait = pickle.load(file_to_load)
-file_to_load = open("info/movie_id_movie_feature_dict.pickle", "rb")
+file_to_load = open("info/card_id_card_feature_dict.pickle", "rb")
 dict_id_feature_pddf = pd.read_pickle(file_to_load)
-print("length of movie_id v.s. movie_property {}".format(len(dict_id_feature_pddf)))
+print("length of card_id v.s. card_property {}".format(len(dict_id_feature_pddf)))
 # 解压缩deepfm模型
 tar = tarfile.open("info/deepfm_model.tar.gz", "r")
 file_names = tar.getnames()
@@ -110,20 +110,20 @@ embed_dim = 32
 
 # 整理recall结果
 data_input_pddf_dict = {}
-data_input_pddf_dict['userId'] = []
-data_input_pddf_dict['programId'] = []
+data_input_pddf_dict['user_id'] = []
+data_input_pddf_dict['item_id'] = []
 for user_k, result_v in dict_recall_result.items():
     for item_v in result_v.keys():
-        data_input_pddf_dict['userId'].append(str(user_k))
-        data_input_pddf_dict['programId'].append(str(item_v))
+        data_input_pddf_dict['user_id'].append(str(user_k))
+        data_input_pddf_dict['item_id'].append(str(item_v))
 data_input_pddf = pd.DataFrame.from_dict(data_input_pddf_dict)
 
-data_input_pddf['programId'] = data_input_pddf['programId'].astype(int)
+data_input_pddf['item_id'] = data_input_pddf['item_id'].astype(int)
 
-dict_id_feature_pddf['programId'] = dict_id_feature_pddf['programId'].astype(int)
+dict_id_feature_pddf['item_id'] = dict_id_feature_pddf['item_id'].astype(int)
 
 data_input_pddf = pd.merge(left=data_input_pddf, right=dict_id_feature_pddf.drop_duplicates(), how='left',
-                           left_on='programId', right_on='programId')
+                           left_on='item_id', right_on='item_id')
 
 
 def user_embed(x, user_portrait):
@@ -139,7 +139,7 @@ def user_id_feat(x, i):
 
 
 # user id feature - user embedding
-data_input_pddf['userid_feat'] = data_input_pddf['userId'].apply(lambda x: user_embed(x, user_portrait))
+data_input_pddf['userid_feat'] = data_input_pddf['user_id'].apply(lambda x: user_embed(x, user_portrait))
 for i in range(32):
     data_input_pddf['user_feature_{}'.format(i)] = data_input_pddf['userid_feat'].apply(lambda x: user_id_feat(x, i))
 
@@ -178,8 +178,8 @@ result = deepfm_model(test_example)
 mk_test_data['rank_score'] = [v for v in list(result['prob'])]
 
 rank_result = {}
-for reviewerID, hist in tqdm(mk_test_data.groupby('userId')):
-    candidate_list = hist['programId'].tolist()
+for reviewerID, hist in tqdm(mk_test_data.groupby('user_id')):
+    candidate_list = hist['item_id'].tolist()
     score_list = hist['rank_score'].tolist()
     id_score_dict = dict(zip(candidate_list, score_list))
     sort_id_score_dict = {k: v for k, v in sorted(id_score_dict.items(), key=lambda item: item[1], reverse=True)}
