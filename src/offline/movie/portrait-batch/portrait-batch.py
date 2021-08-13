@@ -245,8 +245,10 @@ def update_user_embedding(user_id, input_item_list):
 
     return updated_user_embs
 
-
-file_to_load = open("info/portrait.pickle", "rb")
+try:
+    file_to_load = open("info/portrait.pickle", "rb")
+except:
+    file_to_load = open("info/portrait.pickle", "wb")
 try:
     dict_user_portrait = pickle.load(file_to_load)
 except:
