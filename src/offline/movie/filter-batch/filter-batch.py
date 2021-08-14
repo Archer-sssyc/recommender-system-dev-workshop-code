@@ -64,7 +64,7 @@ file_name_list = ['recall_batch_result.pickle', 'rank_batch_result.pickle']
 s3_folder = '{}/feature/recommend-list/movie'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 # 倒排列表的pickle文件
-file_name_list = ['movie_id_movie_property_dict.pickle',
+file_name_list = ['card_id_card_property_dict.pickle',
                   'movie_category_movie_ids_dict.pickle']
 s3_folder = '{}/feature/content/inverted-list/'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
@@ -74,18 +74,18 @@ s3_folder = '{}/model/filter/'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 
 # 加载pickle文件
-file_to_load = open("info/movie_id_movie_property_dict.pickle", "rb")
+file_to_load = open("info/card_id_card_property_dict.pickle", "rb")
 dict_id_content = pickle.load(file_to_load)
 print("length of movie_id v.s. movie_property {}".format(len(dict_id_content)))
 
-file_to_load = open("info/movie_category_movie_ids_dict.pickle", "rb")
-dict_category_id = pickle.load(file_to_load)
-print("length of movie_category v.s. movie_ids {}".format(len(dict_category_id)))
+# file_to_load = open("info/movie_category_movie_ids_dict.pickle", "rb")
+# dict_category_id = pickle.load(file_to_load)
+# print("length of movie_category v.s. movie_ids {}".format(len(dict_category_id)))
 
-# 加载filter配置
-file_to_load = open("info/filter_config.pickle", "rb")
-filter_config = pickle.load(file_to_load)
-print("length of filter_config {}".format(len(filter_config)))
+# # 加载filter配置
+# file_to_load = open("info/filter_config.pickle", "rb")
+# filter_config = pickle.load(file_to_load)
+# print("length of filter_config {}".format(len(filter_config)))
 
 # 加载recall结果
 file_to_load = open("info/recall_batch_result.pickle", "rb")
@@ -163,56 +163,56 @@ def sort_and_fill_pos(filter_result):
         filter_pos = filter_pos + 1
 
 
-def initial_diversity(stats_result, filter_config):
-    for cate in filter_config['category']:
-        stats_result[cate] = 0
+# def initial_diversity(stats_result, filter_config):
+#     for cate in filter_config['category']:
+#         stats_result[cate] = 0
 
 
-def category_diversity_logic(filter_result, stats_result, dict_category_id, filter_config):
-    diversity_count = filter_config['category_diversity_count']
-    min_category = None
-    min_category_count = 999
-    candidate_category_list = []
-    for cate, count in stats_result.items():
-        if count < min_category_count and count != 0:
-            min_category_count = count
-            min_category = cate
-        elif count == 0:
-            candidate_category_list.append(cate)
-    if min_category != None:
-        candidate_category_list.append(min_category)
-    diversity_result_list = []
-    diversity_result_content_list = []
-    current_diversity_count = 0
+# def category_diversity_logic(filter_result, stats_result, dict_category_id, filter_config):
+#     diversity_count = filter_config['category_diversity_count']
+#     min_category = None
+#     min_category_count = 999
+#     candidate_category_list = []
+#     for cate, count in stats_result.items():
+#         if count < min_category_count and count != 0:
+#             min_category_count = count
+#             min_category = cate
+#         elif count == 0:
+#             candidate_category_list.append(cate)
+#     if min_category != None:
+#         candidate_category_list.append(min_category)
+#     diversity_result_list = []
+#     diversity_result_content_list = []
+#     current_diversity_count = 0
 
-    filter_result_list = list(filter_result.keys())
-    filter_result_content_list = list(filter_result.values())
-    sample_try = 0
-    catch_count = 0
-    while catch_count < diversity_count:
-        for cate in candidate_category_list:
-            if str(cate) not in dict_category_id:
-                print("Warning: cannot find {} dict_category_id".format(cate))
-                continue
-            sample_try = sample_try + 1
-            candidate_id = sample(dict_category_id[str(cate)], 1)[0]
-            if candidate_id in filter_result_list:
-                continue
-            else:
-                filter_result_list.append(str(candidate_id))
-                filter_result_content_list.append([str(candidate_id), 'diversity', 0.0,
-                                                   'batch_diversity_{}|{}'.format(len(filter_result_list), cate)])
-                catch_count = catch_count + 1
-                if catch_count >= diversity_count:
-                    break
-        if sample_try > 5 * diversity_count:
-            logging.error(
-                "fail to find enough diversity candidate, need to find {} but only find {}".format(diversity_count,
-                                                                                                   catch_count + 1))
-            break
+#     filter_result_list = list(filter_result.keys())
+#     filter_result_content_list = list(filter_result.values())
+#     sample_try = 0
+#     catch_count = 0
+#     while catch_count < diversity_count:
+#         for cate in candidate_category_list:
+#             if str(cate) not in dict_category_id:
+#                 print("Warning: cannot find {} dict_category_id".format(cate))
+#                 continue
+#             sample_try = sample_try + 1
+#             candidate_id = sample(dict_category_id[str(cate)], 1)[0]
+#             if candidate_id in filter_result_list:
+#                 continue
+#             else:
+#                 filter_result_list.append(str(candidate_id))
+#                 filter_result_content_list.append([str(candidate_id), 'diversity', 0.0,
+#                                                   'batch_diversity_{}|{}'.format(len(filter_result_list), cate)])
+#                 catch_count = catch_count + 1
+#                 if catch_count >= diversity_count:
+#                     break
+#         if sample_try > 5 * diversity_count:
+#             logging.error(
+#                 "fail to find enough diversity candidate, need to find {} but only find {}".format(diversity_count,
+#                                                                                                   catch_count + 1))
+#             break
 
-    update_filter_result = dict(zip(filter_result_list, filter_result_content_list))
-    return update_filter_result
+#     update_filter_result = dict(zip(filter_result_list, filter_result_content_list))
+#     return update_filter_result
 
 
 # 同一批次去重/统计
@@ -222,8 +222,8 @@ dict_filter_result = {}
 for user_id, recall_result in dict_recall_result.items():
     # print("user id {}".format(user_id))
     current_user_result = {}
-    current_diversity_result = {}
-    initial_diversity(current_diversity_result, filter_config)
+    # current_diversity_result = {}
+    # initial_diversity(current_diversity_result, filter_config)
     for recall_id, recall_property in recall_result.items():
         # print("item id {}".format(recall_id))
         # print("dict rank result {}".format(dict_rank_result[str(user_id)]))
@@ -250,15 +250,15 @@ for user_id, recall_result in dict_recall_result.items():
         current_user_result[str(recall_id)].append(filter_score)
         current_user_result[str(recall_id)].append(recommend_trace)
         # 更新多样性统计
-        current_category = dict_id_content[str(recall_id)]['category']
-        for cate in current_category:
-            if cate is not None and len(str(cate)) > 0:
-                current_diversity_result[cate] = current_diversity_result.get(cate, 0) + 1
+        # current_category = dict_id_content[str(recall_id)]['category']
+        # for cate in current_category:
+        #     if cate is not None and len(str(cate)) > 0:
+        #         current_diversity_result[cate] = current_diversity_result.get(cate, 0) + 1
     # 根据filter score更新排序
     sort_and_fill_pos(current_user_result)
-    update_user_result = category_diversity_logic(current_user_result, current_diversity_result, dict_category_id,
-                                                  filter_config)
-    dict_filter_result[str(user_id)] = update_user_result
+    # update_user_result = category_diversity_logic(current_user_result, current_diversity_result, dict_category_id,
+    #                                               filter_config)
+    dict_filter_result[str(user_id)] = current_user_result
 
 file_name = 'info/filter_batch_result.pickle'
 output_file = open(file_name, 'wb')
