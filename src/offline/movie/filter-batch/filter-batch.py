@@ -64,8 +64,7 @@ file_name_list = ['recall_batch_result.pickle', 'rank_batch_result.pickle']
 s3_folder = '{}/feature/recommend-list/movie'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 # 倒排列表的pickle文件
-file_name_list = ['card_id_card_property_dict.pickle',
-                  'movie_category_movie_ids_dict.pickle']
+file_name_list = ['card_id_card_property_dict.pickle']
 s3_folder = '{}/feature/content/inverted-list/'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 # filter配置项
