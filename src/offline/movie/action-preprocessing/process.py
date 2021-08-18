@@ -112,7 +112,7 @@ with SparkSession.builder.appName("Spark App - action preprocessing").getOrCreat
     df_item.cache()
     total_item_count = df_item.count()
     print("total_item_count: {}".format(total_item_count))
-    df_item_id = df_item.select("card_song_id").selectExpr("card_song_id as item_id")
+    df_item_id = df_item.select("c_id").selectExpr("c_id as item_id")
 
     #
     # read user file
@@ -142,8 +142,8 @@ with SparkSession.builder.appName("Spark App - action preprocessing").getOrCreat
     #                                      "row[5] as click_source",
     #                                      )
 
-    df_action_input = df_action_input.join(df_item_id, df_action_input["card_song_id"] == df_item_id["item_id"], "inner") \
-        .select("user_id", "card_song_id", "label", "time")
+    df_action_input = df_action_input.join(df_item_id, df_action_input["c_id"] == df_item_id["item_id"], "inner") \
+        .select("u_id", "c_id", "label", "stat_date")
     df_action_input.cache()
     total_action_count = df_action_input.count()
     print("after jon df_item, total_action_count: {}".format(total_action_count))
@@ -151,10 +151,10 @@ with SparkSession.builder.appName("Spark App - action preprocessing").getOrCreat
     #
     # filter the user_id that not in df_user_input
     #
-    df_action_input = df_action_input.withColumnRenamed("user_id", "action_user_id")
-    df_user_input = df_user_input.withColumnRenamed("time", "user_timestamp")
-    df_action_input.join(df_user_input, df_action_input['action_user_id'] == df_user_input['user_id'], "inner") \
-        .select('user_id', "card_song_id", "label", "time")
+    df_action_input = df_action_input.withColumnRenamed("u_id", "action_user_id")
+    # df_user_input = df_user_input.withColumnRenamed("stat_date", "user_timestamp")
+    df_action_input.join(df_user_input, df_action_input['action_user_id'] == df_user_input['u_id'], "inner") \
+        .select('u_id', "c_id", "label", "stat_date")
     total_action_count = df_action_input.count()
     print("after jon df_user_input, total_action_count: {}".format(total_action_count))
 
