@@ -42,7 +42,9 @@ def write_str_to_s3(content, bucket, key):
 
 
 def prepare_df(item_path):
-    return pd.read_csv(item_path)
+    df = pd.read_csv(item_path)
+    df['c_id'] = df['c_id'].values.astype('int64')
+    return df
 
 
 def get_actor(actor_str):
@@ -96,7 +98,7 @@ s3_folder = '{}/system/item-data/'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 
 df = prepare_df("info/item.csv")
-df['card_song_id'] = df['card_song_id'].values.astype('int64')
+
 
 movie_id_movie_property_data = {}
 row_cnt = 0
@@ -124,7 +126,7 @@ row_cnt = 0
 
 for row in df.iterrows():
     item_row = row[1]
-    program_id = str(item_row['card_song_id'])
+    program_id = str(item_row['c_id'])
     program_dict = {
         'c_singer_sex': str(item_row['c_singer_sex']),
         'c_singer_user_id': str(item_row['c_singer_user_id']),
@@ -134,7 +136,7 @@ for row in df.iterrows():
         'c_song_artist': str(item_row['c_song_artist'])
     }
     row_content = []
-    row_content.append(str(item_row['card_song_id']))
+    row_content.append(str(item_row['c_id']))
     row_content.append(program_dict['c_singer_sex'])
     row_content.append(program_dict['c_singer_user_id'])
     row_content.append(program_dict['c_singer_age'])
@@ -149,7 +151,7 @@ for row in df.iterrows():
 #                                                 'language'])
 
 raw_data_pddf = pd.DataFrame.from_dict(movie_id_movie_property_data, orient='index',
-                                       columns=['card_song_id', 'c_singer_sex', 'c_singer_user_id', 'c_singer_age', 'c_singer_country', 'c_song_name',
+                                       columns=['c_id', 'c_singer_sex', 'c_singer_user_id', 'c_singer_age', 'c_singer_country', 'c_song_name',
                                                 'c_song_artist'])
                                                 
 raw_data_pddf = raw_data_pddf.reset_index(drop=True)
@@ -159,9 +161,9 @@ sample_data_pddf = raw_data_pddf
 
 # generate lable encoding/ sparse feature
 lbe = LabelEncoder()
-sample_data_pddf['encode_id'] = lbe.fit_transform(sample_data_pddf['card_song_id'])
+sample_data_pddf['encode_id'] = lbe.fit_transform(sample_data_pddf['c_id'])
 
-raw_item_id_list = list(map(str, sample_data_pddf['card_song_id'].values))
+raw_item_id_list = list(map(str, sample_data_pddf['c_id'].values))
 code_item_id_list = list(map(int, sample_data_pddf['encode_id'].values))
 raw_embed_item_id_dict = dict(zip(raw_item_id_list, code_item_id_list))
 embed_raw_item_id_dict = dict(zip(code_item_id_list, raw_item_id_list))
