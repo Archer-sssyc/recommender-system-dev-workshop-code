@@ -102,10 +102,10 @@ user_df = pd.read_csv('info/user.csv')
 
 lbe = LabelEncoder()
 
-user_df['encode_id'] = lbe.fit_transform(user_df['user_id'])
+user_df['encode_id'] = lbe.fit_transform(user_df['u_id'])
 
 # constructu mapping dictionary
-raw_user_id_list = list(map(str, user_df['user_id'].values))
+raw_user_id_list = list(map(str, user_df['u_id'].values))
 code_user_id_list = list(map(int, user_df['encode_id'].values))
 raw_embed_user_id_dict = dict(zip(raw_user_id_list, code_user_id_list))
 embed_raw_user_id_dict = dict(zip(code_user_id_list, raw_user_id_list))
