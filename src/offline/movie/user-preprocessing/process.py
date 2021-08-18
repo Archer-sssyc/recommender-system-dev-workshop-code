@@ -81,7 +81,7 @@ with SparkSession.builder.appName("Spark App - action preprocessing").getOrCreat
     #                                      "row[3] as timestamp",
     #                                      "row[4] as name",
     #                                      )
-    df_user_input = df_user_input.dropDuplicates(['user_id'])
+    df_user_input = df_user_input.dropDuplicates(['u_id'])
     total_user_count = df_user_input.count()
     print("total_user_count: {}".format(total_user_count))
 
