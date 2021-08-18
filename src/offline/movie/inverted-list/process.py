@@ -85,7 +85,7 @@ def get_bucket_key_from_s3_path(s3_path):
 
 def prepare_df(item_path):
     df = pd.read_csv(item_path)
-    df['card_song_id'] = df['card_song_id'].values.astype('int64')
+    df['c_id'] = df['c_id'].values.astype('int64')
     return df
 
 
@@ -117,12 +117,12 @@ def gen_movie_id_movie_property_dict(df):
     card_id_card_property_dict = {}
     for row in df.iterrows():
         item_row = row[1]
-        program_id = str(item_row['card_song_id'])
+        program_id = str(item_row['c_id'])
         program_dict = {
-            'c_singer_sex': str(item_row['c_singer_sex']),
+            # 'c_singer_sex': str(item_row['c_singer_sex']),
             'c_singer_user_id': str(item_row['c_singer_user_id']),
-            'c_singer_age': str(item_row['c_singer_age']),
-            'c_singer_country': str(item_row['c_singer_country']),
+            # 'c_singer_age': str(item_row['c_singer_age']),
+            # 'c_singer_country': str(item_row['c_singer_country']),
             'c_song_name': str(item_row['c_song_name']),
             'c_song_artist': str(item_row['c_song_artist'])
         }
@@ -181,10 +181,10 @@ def sort_by_score(df):
 def gen_movie_properties_to_movie_ids_dict(df):
     #df_sorted = sort_by_score(df)
 
-    card_sex_card_ids_dict = {}
+    # card_sex_card_ids_dict = {}
     card_user_card_ids_dict = {}
-    card_age_card_ids_dict = {}
-    card_country_card_ids_dict = {}
+    # card_age_card_ids_dict = {}
+    # card_country_card_ids_dict = {}
 
     card_name_card_ids_dict = {}
     card_artist_card_ids_dict = {}
@@ -192,18 +192,18 @@ def gen_movie_properties_to_movie_ids_dict(df):
     for row in df.iterrows():
         item_row = row[1]
         # program_id = {"id": item_row['program_id'], "score": item_row['cal_score'] }
-        program_id = item_row['card_song_id']
-        for key in [item for item in get_single_item(item_row['c_singer_sex']) if item is not None]:
-            card_sex_card_ids_dict.setdefault(key, []).append(program_id)
+        program_id = item_row['c_id']
+        # for key in [item for item in get_single_item(item_row['c_singer_sex']) if item is not None]:
+        #     card_sex_card_ids_dict.setdefault(key, []).append(program_id)
 
         for key in [item for item in get_single_item(item_row['c_singer_user_id']) if item is not None]:
             card_user_card_ids_dict.setdefault(key, []).append(program_id)
 
-        for key in [item for item in get_single_item(item_row['c_singer_age']) if item is not None]:
-            card_age_card_ids_dict.setdefault(key, []).append(program_id)
+        # for key in [item for item in get_single_item(item_row['c_singer_age']) if item is not None]:
+        #     card_age_card_ids_dict.setdefault(key, []).append(program_id)
 
-        for key in [item for item in get_single_item(item_row['c_singer_country']) if item is not None]:
-            card_country_card_ids_dict.setdefault(key, []).append(program_id)
+        # for key in [item for item in get_single_item(item_row['c_singer_country']) if item is not None]:
+        #     card_country_card_ids_dict.setdefault(key, []).append(program_id)
 
         for key in [item for item in get_single_item(item_row['c_song_name']) if item is not None]:
             card_name_card_ids_dict.setdefault(key, []).append(program_id)
@@ -212,10 +212,10 @@ def gen_movie_properties_to_movie_ids_dict(df):
             card_artist_card_ids_dict.setdefault(key, []).append(program_id)
 
     result_dict = {
-        'card_sex_card_ids_dict': card_sex_card_ids_dict,
+        # 'card_sex_card_ids_dict': card_sex_card_ids_dict,
         'card_user_card_ids_dict': card_user_card_ids_dict,
-        'card_age_card_ids_dict': card_age_card_ids_dict,
-        'card_country_card_ids_dict': card_country_card_ids_dict,
+        # 'card_age_card_ids_dict': card_age_card_ids_dict,
+        # 'card_country_card_ids_dict': card_country_card_ids_dict,
         'card_name_card_ids_dict': card_name_card_ids_dict,
         'card_artist_card_ids_dict': card_artist_card_ids_dict
     }
