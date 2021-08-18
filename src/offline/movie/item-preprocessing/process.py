@@ -54,7 +54,7 @@ print(f"bucket:{bucket}, prefix:{prefix}")
 # input_prefix=recommender-system-news-open-toutiao/system/item-data/raw-input/
 # output_prefix=recommender-system-news-open-toutiao/system/item-data/emr-out/
 
-input_file = "s3://{}/{}/system/ingest-data/item/item.csv".format(bucket, prefix)
+input_file = "s3://{}/{}/system/ingest-data/item/song_cards.csv".format(bucket, prefix)
 emr_output_key_prefix = "{}/system/emr/item-preprocessing/output/".format(prefix)
 emr_output_bucket_key_prefix = "s3://{}/{}".format(bucket, emr_output_key_prefix)
 
@@ -72,6 +72,7 @@ with SparkSession.builder.appName("Spark App - item preprocessing").getOrCreate(
     #
     print("spark reading")
     df_input = spark.read.csv(input_file, header=True)
+    df_input = df_input.filter(df_input['c_singer_user_id'] > 0.0)
     # program_id|program_type|program_name|release_year|director|actor|category_property|language|ticket_num|popularity|score|level|new_series
     # df_input = df_input.selectExpr("split(value, '_!_') as row").where(
     #     size(col("row")) > 12).selectExpr("row[0] as program_id",
