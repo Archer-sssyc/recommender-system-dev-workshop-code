@@ -101,31 +101,31 @@ raw_embed_item_mapping = pickle.load(file_to_load)
 file_to_load = open("info/raw_embed_user_mapping.pickle", "rb")
 raw_embed_user_mapping = pickle.load(file_to_load)
 
-user_ids = pd.DataFrame(raw_embed_user_mapping.keys(), columns=['user_id'])
+user_ids = pd.DataFrame(raw_embed_user_mapping.keys(), columns=['u_id'])
 user_ids = user_ids.astype('str')
-item_ids = pd.DataFrame(raw_embed_item_mapping.keys(), columns=['card_song_id'])
+item_ids = pd.DataFrame(raw_embed_item_mapping.keys(), columns=['c_id'])
 item_ids = item_ids.astype('str')
 
 # 加载所有人的数据
 data_mk = pd.read_csv('info/action.csv')
 
-data_tt = data_mk.rename(columns={'label': 'rating', 'action_user_id': 'user_id'})
+data_tt = data_mk.rename(columns={'label': 'rating', 'action_user_id': 'u_id'})
 data_tt = data_tt.astype('str')
 print("before join user_ids/item_ids, len data_tt:", len(data_tt))
 
-data_tt = pd.merge(data_tt, user_ids, how='inner', on=['user_id'])
-data_tt = pd.merge(data_tt, item_ids, how='inner', on=['card_song_id'])
+data_tt = pd.merge(data_tt, user_ids, how='inner', on=['u_id'])
+data_tt = pd.merge(data_tt, item_ids, how='inner', on=['c_id'])
 
 print("after join user_ids/item_ids, len data_tt:", len(data_tt))
 
 data_tt_click = data_tt[data_tt['rating'] == '1']
 data_tt_exp = data_tt[data_tt['rating'] == '0']
-print('click len {} and exp len {}, click rate {}, {} movies'.format(len(data_tt_click), len(data_tt_exp),
+print('click len {} and exp len {}, click rate {}, {} song_cards'.format(len(data_tt_click), len(data_tt_exp),
                                                                      float(len(data_tt_click) / len(data_tt)),
-                                                                     len(data_tt['card_song_id'].unique())))
+                                                                     len(data_tt['c_id'].unique())))
 
 
-features = ['user_id', 'card_song_id']
+features = ['u_id', 'c_id']
 map_dicts = [raw_embed_user_mapping, raw_embed_item_mapping]
 feature_max_idx = {}
 for feature, map_dict in zip(features, map_dicts):
@@ -134,10 +134,10 @@ for feature, map_dict in zip(features, map_dicts):
     data_tt[feature + "_encode"] = data_tt[feature].apply(lambda x: map_dict[x])
     feature_max_idx[feature] = data_tt[feature + "_encode"].max() + 1
 
-data_tt.drop(columns=["user_id", "card_song_id"], inplace=True)
+data_tt.drop(columns=["u_id", "c_id"], inplace=True)
 data_tt = data_tt.rename(columns={
-    "user_id_encode": "user_id",
-    "card_song_id_encode": "card_song_id"
+    "u_id_encode": "u_id",
+    "c_id_encode": "c_id"
 })
 
 item_profile = list(raw_embed_item_mapping.keys())
@@ -146,8 +146,8 @@ for ele in item_profile:
     item_profile_encode.append(raw_embed_item_mapping[ele])
 
 count_thred = 2
-data_tt_filter = data_tt[data_tt['rating'] == '1'].groupby(['card_song_id']).filter(lambda x: len(x) > count_thred)
-pass_item_pddf = data_tt_filter.drop_duplicates('card_song_id')[['card_song_id', 'rating']]
+data_tt_filter = data_tt[data_tt['rating'] == '1'].groupby(['c_id']).filter(lambda x: len(x) > count_thred)
+pass_item_pddf = data_tt_filter.drop_duplicates('c_id')[['c_id', 'rating']]
 
 data_tt_click = data_tt[data_tt['rating'] == '1']
 keys = list(pass_item_pddf.columns.values)
@@ -156,19 +156,19 @@ i2 = pass_item_pddf.set_index(keys).index
 data_tt_click = data_tt_click[i1.isin(i2)]
 
 # data = pd.read_csvdata = pd.read_csv("./movielens_sample.txt")
-sparse_features = ["card_song_id", "user_id"]
+sparse_features = ["c_id", "u_id"]
 SEQ_LEN = 50
 negsample = 5
 
 # 1.Label Encoding for sparse features,and process sequence features with `gen_date_set` and `gen_model_input`
-user_profile = data_tt[["user_id"]].drop_duplicates('user_id')
+user_profile = data_tt[["u_id"]].drop_duplicates('u_id')
 
 # item_profile = data_tt.drop_duplicates('movie_id')
 # item_profile = data[["movie_id"]].drop_duplicates('movie_id')
 
-user_profile.set_index("user_id", inplace=True)
+user_profile.set_index("u_id", inplace=True)
 
-user_item_list = data_tt.groupby("user_id")['card_song_id'].apply(list)
+user_item_list = data_tt.groupby("u_id")['c_id'].apply(list)
 
 # train_set, test_set = gen_data_set(data_tt_click, negsample, data_tt['movie_id'].unique())
 train_set, test_set = gen_data_set(data_tt_click, negsample, np.array(item_profile_encode))
@@ -180,12 +180,19 @@ test_model_input, test_label = gen_model_input(test_set, user_profile, SEQ_LEN)
 
 embedding_dim = 32
 
-user_feature_columns = [SparseFeat('user_id', feature_max_idx['user_id'], 16),
-                        VarLenSparseFeat(SparseFeat('hist_card_song_id', feature_max_idx['card_song_id'], embedding_dim,
-                                                    embedding_name="card_song_id"), SEQ_LEN, 'mean', 'hist_len'),
+# user_feature_columns = [SparseFeat('u_id', feature_max_idx['u_id'], 16),
+#                         VarLenSparseFeat(SparseFeat('hist_card_song_id', feature_max_idx['c_id'], embedding_dim,
+#                                                     embedding_name="c_id"), SEQ_LEN, 'mean', 'hist_len'),
+#                         ]
+
+# item_feature_columns = [SparseFeat('c_id', feature_max_idx['c_id'], embedding_dim)]
+
+user_feature_columns = [SparseFeat('u_id', feature_max_idx['u_id'], 16),
+                        VarLenSparseFeat(SparseFeat('hist_card_song_id', max(item_profile_encode) + 1, embedding_dim,
+                                                    embedding_name="c_id"), SEQ_LEN, 'mean', 'hist_len'),
                         ]
 
-item_feature_columns = [SparseFeat('card_song_id', feature_max_idx['card_song_id'], embedding_dim)]
+item_feature_columns = [SparseFeat('c_id', max(item_profile_encode) + 1, embedding_dim)]
 
 # 3.Define Model and train
 
@@ -208,7 +215,7 @@ history = model.fit(train_model_input, train_label,  # train_label,
 # 4. Generate user features for testing and full item features for retrieval
 test_user_model_input = test_model_input
 # all_item_model_input = {"movie_id": item_profile['movie_id'].values,}
-all_item_model_input = {"card_song_id": np.array(item_profile_encode), }
+all_item_model_input = {"c_id": np.array(item_profile_encode), }
 
 user_embedding_model = Model(inputs=model.user_input, outputs=model.user_embedding)
 item_embedding_model = Model(inputs=model.item_input, outputs=model.item_embedding)
@@ -232,7 +239,7 @@ test_cnt = 0
 
 test_true_label = {line[0]: [line[2]] for line in test_set}
 
-for i, uid in tqdm(enumerate(test_user_model_input['user_id'])):
+for i, uid in tqdm(enumerate(test_user_model_input['u_id'])):
     #     try:
     pred = [item_profile_encode[x] for x in I[i]]
     filter_item = None
@@ -253,7 +260,7 @@ for i, uid in tqdm(enumerate(test_user_model_input['user_id'])):
 #         print(i)
 print("")
 print("recall", np.mean(s))
-print("hit rate", hit / len(test_user_model_input['user_id']))
+print("hit rate", hit / len(test_user_model_input['u_id']))
 
 # 存储/更新用户嵌入模型
 file_name = 'info/user_embeddings.h5'
