@@ -133,7 +133,7 @@ def action_statistics(df_action_input, df_item_input, df_user_input):
     print("begin finding top_users ...")
     df_action_event = df_clicked_action_event. \
         withColumn("timestamp_bigint", col('stat_date').cast('bigint')). \
-        withColumn("event_time", col('timestamp_bigint').cast('stat_date')). \
+        withColumn("event_time", col('timestamp_bigint').cast('timestamp')). \
         drop(col('timestamp_bigint')). \
         drop(col('label')). \
         drop(col('stat_date'))
@@ -225,7 +225,7 @@ with SparkSession.builder.appName("Spark App - item preprocessing").getOrCreate(
     #
     # item data
     #
-    df_item_input = spark.read.text(item_input_file, header=True)
+    df_item_input = spark.read.csv(item_input_file, header=True)
     # df_item_input = df_item_input.selectExpr("split(value, '_!_') as row").where(
     #     size(col("row")) > 12).selectExpr("row[0] as item_id",
     #                                       "row[1] as program_type",
@@ -248,7 +248,7 @@ with SparkSession.builder.appName("Spark App - item preprocessing").getOrCreate(
     # action data
     #
 
-    df_action_input = spark.read.text(action_input_file, header=True)
+    df_action_input = spark.read.csv(action_input_file, header=True)
     # df_action_input = df_action_input.selectExpr("split(value, '_!_') as row").where(
     #     size(col("row")) > 5).selectExpr("row[0] as user_id",
     #                                      "row[1] as item_id",
@@ -264,7 +264,7 @@ with SparkSession.builder.appName("Spark App - item preprocessing").getOrCreate(
     #
     # user data
     #
-    df_user_input = spark.read.text(user_input_file, header=True)
+    df_user_input = spark.read.csv(user_input_file, header=True)
     # df_user_input = df_user_input.selectExpr("split(value, '_!_') as row").where(
     #     size(col("row")) > 4).selectExpr("row[0] as user_id",
     #                                      "row[4] as user_name",
