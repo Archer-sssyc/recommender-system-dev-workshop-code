@@ -87,7 +87,7 @@ sync_s3(file_name_list, s3_folder, local_folder)
 # 加载用户数据
 user_click_records = {}
 
-data_mk = pd.read_csv('info/action.csv').rename(columns={'label': 'rating', 'action_user_id': 'user_id', 'card_song_id': 'item_id'})
+data_mk = pd.read_csv('info/action.csv').rename(columns={'label': 'rating', 'action_user_id': 'user_id', 'c_id': 'item_id'})
 
 for reviewerID, hist in tqdm(data_mk[data_mk['rating'] == 1].groupby('user_id')):
     pos_list = hist['item_id'].tolist()
@@ -230,7 +230,7 @@ def update_user_embedding(user_id, input_item_list):
         if cnt < 50:
             map_input_item_list[0][cnt] = dict_item_mapping[str(item)]
     model_input = {}
-    model_input['user_id'] = np.array([int(map_user_id)])
+    model_input['u_id'] = np.array([int(map_user_id)])
     model_input['hist_card_song_id'] = map_input_item_list
     model_input['hist_len'] = np.array([watch_len])
 
