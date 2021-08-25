@@ -49,7 +49,7 @@ def write_str_to_s3(content, bucket, key):
 
 def prepare_df(item_path):
     df = pd.read_csv(item_path)
-    df['card_song_id'] = df['card_song_id'].values.astype('int64')
+    df['c_id'] = df['c_id'].values.astype('int64')
     return df
 
 
@@ -171,28 +171,28 @@ card_id_card_property_data = {}
 row_cnt = 0
 for row in df.iterrows():
     item_row = row[1]
-    program_id = str(item_row['card_song_id'])
+    program_id = str(item_row['c_id'])
     program_dict = {
-        'c_singer_sex': str(item_row['c_singer_sex']),
+        # 'c_singer_sex': str(item_row['c_singer_sex']),
         'c_singer_user_id': str(item_row['c_singer_user_id']),
-        'c_singer_age': str(item_row['c_singer_age']),
-        'c_singer_country': str(item_row['c_singer_country']),
+        # 'c_singer_age': str(item_row['c_singer_age']),
+        # 'c_singer_country': str(item_row['c_singer_country']),
         'c_song_name': str(item_row['c_song_name']),
         'c_song_artist': str(item_row['c_song_artist'])
     }
     row_content = []
-    row_content.append(str(item_row['card_song_id']))
-    row_content.append(program_dict['c_singer_sex'])
+    row_content.append(str(item_row['c_id']))
+    # row_content.append(program_dict['c_singer_sex'])
     row_content.append(program_dict['c_singer_user_id'])
-    row_content.append(program_dict['c_singer_age'])
-    row_content.append(program_dict['c_singer_country'])
+    # row_content.append(program_dict['c_singer_age'])
+    # row_content.append(program_dict['c_singer_country'])
     row_content.append(program_dict['c_song_name'])
     row_content.append(program_dict['c_song_artist'])
     card_id_card_property_data['row_{}'.format(row_cnt)] = row_content
     row_cnt = row_cnt + 1
 
 raw_data_pddf = pd.DataFrame.from_dict(card_id_card_property_data, orient='index',
-                                       columns=['card_song_id', 'c_singer_sex', 'c_singer_user_id', 'c_singer_age', 'c_singer_country', 'c_song_name',
+                                       columns=['c_id', 'c_singer_user_id', 'c_song_name',
                                                 'c_song_artist'])
 raw_data_pddf = raw_data_pddf.reset_index(drop=True)
 
@@ -200,22 +200,22 @@ sample_data_pddf = raw_data_pddf
 
 # item id feature - item embedding
 print("根据item_id索引itemid_feat（嵌入）")
-sample_data_pddf['itemid_feat'] = sample_data_pddf['card_song_id'].progress_apply(
+sample_data_pddf['itemid_feat'] = sample_data_pddf['c_id'].progress_apply(
     lambda x: item_embed(x, raw_embed_item_mapping, ub_item_embeddings))
 print("将{}维物品嵌入转化为不同的连续型feature".format(embed_dim))
 for i in tqdm(range(embed_dim)):
     sample_data_pddf['item_feature_{}'.format(i)] = sample_data_pddf['itemid_feat'].apply(lambda x: item_id_feat(x, i))
 # sparse feature
 print("根据item_id对应的content生成离散feature")
-popularity_method_list = ['c_singer_sex', 'c_singer_user_id', 'c_singer_age', 'c_singer_country', 'c_song_name',
+popularity_method_list = ['c_singer_user_id', 'c_song_name',
                                                 'c_song_artist']
 for i, mt in tqdm(enumerate(popularity_method_list)):
-    sample_data_pddf['sparse_feature_{}'.format(i)] = sample_data_pddf['card_song_id'].apply(
+    sample_data_pddf['sparse_feature_{}'.format(i)] = sample_data_pddf['c_id'].apply(
         lambda x: sparse_item_id_feat(x, mt))
 
 mk_data = sample_data_pddf
 dense_feature_size = embed_dim
-sparse_feature_size = 6
+sparse_feature_size = 3  #should be changed by fact
 for i in range(dense_feature_size):
     mk_data['I{}'.format(i + embed_dim)] = mk_data['item_feature_{}'.format(i)]
 for i in range(sparse_feature_size):
@@ -237,9 +237,9 @@ for row in mk_data.iterrows():
     item_row = row[1]
     #     print(item_row)
     #     break
-    program_dict = str(item_row['card_song_id'])
+    program_dict = str(item_row['c_id'])
     row_content = []
-    row_content.append(str(item_row['card_song_id']))
+    row_content.append(str(item_row['c_id']))
     dense_score = []
     for feat in mk_sparse_features:
         row_content.append(item_row[feat])
@@ -250,7 +250,7 @@ for row in mk_data.iterrows():
     card_id_card_feature_data['row_{}'.format(row_cnt)] = row_content
     row_cnt = row_cnt + 1
 
-col_names = ['card_song_id'] + mk_sparse_features + mk_dense_features + ['item_feat_mean']
+col_names = ['c_id'] + mk_sparse_features + mk_dense_features + ['item_feat_mean']
 mk_item_feature_pddf = pd.DataFrame.from_dict(card_id_card_feature_data, orient='index', columns=col_names)
 mk_item_feature_pddf = mk_item_feature_pddf.reset_index(drop=True)
 
