@@ -107,7 +107,7 @@ s3_folder = '{}/feature/content/inverted-list/'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 
 # 加载所有人的数据
-action_data_pddf = pd.read_csv('info/train_action.csv').rename(columns={'label': 'rating', 'action_user_id': 'user_id', 'card_song_id': 'item_id'})
+action_data_pddf = pd.read_csv('info/train_action.csv').rename(columns={'label': 'rating', 'action_user_id': 'user_id', 'c_id': 'item_id', 'stat_date': 'time'})
 print("load {} action data".format(len(action_data_pddf)))
 
 # 加载pickle文件
@@ -180,7 +180,7 @@ def user_embed_func(x, user_click_record=user_click_record, user_embedding_model
             if cnt < 50:
                 map_input_item_list[0][cnt] = dict_item_mapping[str(item)]
         model_input = {}
-        model_input['user_id'] = np.array([int(map_user_id)])
+        model_input['u_id'] = np.array([int(map_user_id)])
         model_input['hist_card_song_id'] = map_input_item_list
         model_input['hist_len'] = np.array([watch_len])
 
@@ -195,16 +195,16 @@ def user_embed_func(x, user_click_record=user_click_record, user_embedding_model
         return [0] * embed_dim
 
 
-dict_id_feature_pddf['card_song_id'] = dict_id_feature_pddf['card_song_id'].astype(int)
+dict_id_feature_pddf['c_id'] = dict_id_feature_pddf['c_id'].astype(int)
 
 sample_data_pddf = pd.merge(left=sample_data_pddf, right=dict_id_feature_pddf.drop_duplicates(), how='left',
-                            left_on='item_id', right_on='card_song_id')
+                            left_on='item_id', right_on='c_id')
 
 # user id feature - user embedding
 print("根据user_id的历史记录生成userid_feat（嵌入）")
 # sample_data_pddf['userid_feat'] = sample_data_pddf.progress_apply(user_embed_func, axis=1)
 sample_data_pddf['userid_feat'] = sample_data_pddf.apply(user_embed_func, axis=1)
-sample_data_pddf['userid_feat'] = sample_data_pddf.apply(user_embed_func, axis=1)
+# sample_data_pddf['userid_feat'] = sample_data_pddf.apply(user_embed_func, axis=1)
 
 print("将{}维用户嵌入转化为不同的连续型feature".format(embed_dim))
 for i in tqdm(range(embed_dim)):
@@ -212,7 +212,7 @@ for i in tqdm(range(embed_dim)):
 
 mk_data = sample_data_pddf
 dense_feature_size = embed_dim
-sparse_feature_size = 6
+sparse_feature_size = 3
 for i in range(dense_feature_size):
     if i < embed_dim:
         mk_data['I{}'.format(i + 1)] = mk_data['user_feature_{}'.format(i)]
