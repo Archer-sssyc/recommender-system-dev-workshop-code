@@ -122,7 +122,7 @@ def update_portrait_under_a_property(mt_content, mt_up, ratio):
                 mt_up[k]['mark'] = '0'
 
     # update logic
-    for ct in mt_content:
+    for ct in [mt_content]:
         if ct is not None and len(str(ct).strip()) > 0:
             if ct not in mt_up:
                 mt_up[ct] = {}
@@ -256,7 +256,7 @@ except:
 print("update user portrait for batch users")
 for user_id, input_item_list in user_click_records.items():
     if str(user_id) not in dict_user_mapping:
-        print("Warning: cannot find user_id: {} in dict_user_mapping")
+        print("Warning: cannot find user_id: {} in dict_user_mapping".format(user_id))
         continue
     print("user id {} item list {}".format(user_id, input_item_list))
     if dict_user_portrait.get(str(user_id)) is None:
