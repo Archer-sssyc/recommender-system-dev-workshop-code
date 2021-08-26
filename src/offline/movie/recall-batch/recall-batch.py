@@ -77,10 +77,10 @@ s3_folder = '{}/feature/recommend-list/portrait'.format(prefix)
 sync_s3(file_name_list, s3_folder, local_folder)
 # 倒排列表的pickle文件
 file_name_list = ['card_id_card_property_dict.pickle',
-                  'card_sex_card_ids_dict.pickle',
+                #   'card_sex_card_ids_dict.pickle',
                   'card_user_card_ids_dict.pickle',
-                  'card_age_card_ids_dict.pickle',
-                  'card_country_card_ids_dict.pickle',
+                #   'card_age_card_ids_dict.pickle',
+                #   'card_country_card_ids_dict.pickle',
                   'card_name_card_ids_dict.pickle',
                   'card_artist_card_ids_dict.pickle']
 s3_folder = '{}/feature/content/inverted-list/'.format(prefix)
@@ -95,21 +95,21 @@ file_to_load = open("info/card_id_card_property_dict.pickle", "rb")
 dict_id_content = pickle.load(file_to_load)
 print("length of card_id v.s. card_property {}".format(len(dict_id_content)))
 
-file_to_load = open("info/card_sex_card_ids_dict.pickle", "rb")
-dict_sex_id = pickle.load(file_to_load)
-print("length of card_sex v.s. card_ids {}".format(len(dict_sex_id)))
+# file_to_load = open("info/card_sex_card_ids_dict.pickle", "rb")
+# dict_sex_id = pickle.load(file_to_load)
+# print("length of card_sex v.s. card_ids {}".format(len(dict_sex_id)))
 
 file_to_load = open("info/card_user_card_ids_dict.pickle", "rb")
 dict_user_id = pickle.load(file_to_load)
 print("length of card_dicrector v.s. card_ids {}".format(len(dict_user_id)))
 
-file_to_load = open("info/card_age_card_ids_dict.pickle", "rb")
-dict_age_id = pickle.load(file_to_load)
-print("length of card_age v.s. card_ids {}".format(len(dict_age_id)))
+# file_to_load = open("info/card_age_card_ids_dict.pickle", "rb")
+# dict_age_id = pickle.load(file_to_load)
+# print("length of card_age v.s. card_ids {}".format(len(dict_age_id)))
 
-file_to_load = open("info/card_country_card_ids_dict.pickle", "rb")
-dict_country_id = pickle.load(file_to_load)
-print("length of card_country v.s. card_ids {}".format(len(dict_country_id)))
+# file_to_load = open("info/card_country_card_ids_dict.pickle", "rb")
+# dict_country_id = pickle.load(file_to_load)
+# print("length of card_country v.s. card_ids {}".format(len(dict_country_id)))
 
 file_to_load = open("info/card_name_card_ids_dict.pickle", "rb")
 dict_name_id = pickle.load(file_to_load)
@@ -138,10 +138,10 @@ config_dict = {}
 recall_wrap = {}
 recall_wrap['content'] = dict_id_content
 recall_wrap['dict_wrap'] = {}
-recall_wrap['dict_wrap']['c_singer_sex'] = dict_sex_id
+# recall_wrap['dict_wrap']['c_singer_sex'] = dict_sex_id
 recall_wrap['dict_wrap']['c_singer_user_id'] = dict_user_id
-recall_wrap['dict_wrap']['c_singer_age'] = dict_age_id
-recall_wrap['dict_wrap']['c_singer_country'] = dict_country_id
+# recall_wrap['dict_wrap']['c_singer_age'] = dict_age_id
+# recall_wrap['dict_wrap']['c_singer_country'] = dict_country_id
 recall_wrap['dict_wrap']['c_song_name'] = dict_name_id
 recall_wrap['dict_wrap']['c_song_artist'] = dict_artist_id
 recall_wrap['config'] = recall_config
@@ -150,7 +150,7 @@ recall_wrap['ub_index'] = ub_faiss_index
 recall_wrap['ub_idx_mapping'] = ub_idx_mapping
 # 加载所有人的数据
 
-action_data_pddf = pd.read_csv('info/action.csv').rename(columns={'label': 'rating', 'action_user_id': 'user_id', 'card_song_id': 'item_id'})
+action_data_pddf = pd.read_csv('info/action.csv').rename(columns={'label': 'rating', 'action_user_id': 'user_id', 'c_id': 'item_id'})
 
 print("load {} action data".format(len(action_data_pddf)))
 # 初始化recall结果

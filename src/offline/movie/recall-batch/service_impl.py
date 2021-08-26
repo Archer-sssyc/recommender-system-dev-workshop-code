@@ -78,7 +78,7 @@ class ServiceImpl:
                     # for prop in current_prop:
                     current_list_with_score = current_list_with_score + \
                                               self.recall_pos_score(src_item,
-                                                                    dict_wrap[mt][current_prop][0:topn_wrap[mt]],
+                                                                    dict_wrap[mt][current_prop.lower()][0:topn_wrap[mt]],
                                                                     weights[mt], multiple_shot_record)
                     single_recall_result['method'] = mt
                     single_recall_result['list'] = current_list_with_score
@@ -113,7 +113,7 @@ class ServiceImpl:
                     if prop and dict_wrap[mt].get(prop):
                         current_list_with_score = current_list_with_score + \
                                                   self.recall_pos_score(None,
-                                                                        dict_wrap[mt][prop][0:topn_wrap[user_mt]],
+                                                                        dict_wrap[mt][prop.lower()][0:topn_wrap[user_mt]],
                                                                         weights[user_mt], multiple_shot_record)
                     else:
                         logging.warning("cannot find '{}' in dict_wrap[{}]".format(prop, mt))
