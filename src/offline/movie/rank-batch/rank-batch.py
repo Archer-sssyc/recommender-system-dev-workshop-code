@@ -120,7 +120,7 @@ data_input_pddf = pd.DataFrame.from_dict(data_input_pddf_dict)
 
 data_input_pddf['item_id'] = data_input_pddf['item_id'].astype(int)
 
-dict_id_feature_pddf['item_id'] = dict_id_feature_pddf['card_song_id'].astype(int)
+dict_id_feature_pddf['item_id'] = dict_id_feature_pddf['c_id'].astype(int)
 
 data_input_pddf = pd.merge(left=data_input_pddf, right=dict_id_feature_pddf.drop_duplicates(), how='left',
                            left_on='item_id', right_on='item_id')
@@ -145,7 +145,7 @@ for i in range(32):
 
 mk_test_data = data_input_pddf
 dense_feature_size = embed_dim
-sparse_feature_size = 6
+sparse_feature_size = 3
 for i in range(dense_feature_size):
     if i < embed_dim:
         mk_test_data['I{}'.format(i + 1)] = mk_test_data['user_feature_{}'.format(i)]
