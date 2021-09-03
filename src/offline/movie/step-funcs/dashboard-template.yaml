@@ -88,18 +88,18 @@ Resources:
         }
 
 
-  DashboardScheduledRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Name: !Sub rs-${Stage}-Movie-DashboardScheduledRule
-      ScheduleExpression: "cron(0/30 * ? * MON-FRI *)"
-      State: "ENABLED"
-      Targets:
-        - Arn: !Ref DashboardStepFunc
-          RoleArn: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/rs-${Stage}-${StepFuncAndLambdaRoleName}-${AWS::Region}"
-          Id: "TargetDashboardStepFunc"
-          Input: !Sub |
-            {
-              "Bucket": "${Bucket}",
-              "S3Prefix": "${S3Prefix}"
-            }
+  # DashboardScheduledRule:
+  #   Type: AWS::Events::Rule
+  #   Properties:
+  #     Name: !Sub rs-${Stage}-Movie-DashboardScheduledRule
+  #     ScheduleExpression: "cron(0/30 * ? * MON-FRI *)"
+  #     State: "ENABLED"
+  #     Targets:
+  #       - Arn: !Ref DashboardStepFunc
+  #         RoleArn: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/rs-${Stage}-${StepFuncAndLambdaRoleName}-${AWS::Region}"
+  #         Id: "TargetDashboardStepFunc"
+  #         Input: !Sub |
+  #           {
+  #             "Bucket": "${Bucket}",
+  #             "S3Prefix": "${S3Prefix}"
+  #           }
