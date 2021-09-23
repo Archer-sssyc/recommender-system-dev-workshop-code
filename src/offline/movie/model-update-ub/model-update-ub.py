@@ -210,7 +210,7 @@ model = YoutubeDNN(user_feature_columns, item_feature_columns, num_sampled=100,
 model.compile(optimizer="adam", loss=sampledsoftmaxloss)  # "binary_crossentropy")
 
 history = model.fit(train_model_input, train_label,  # train_label,
-                    batch_size=512, epochs=300, verbose=1, validation_split=0.0, )
+                    batch_size=512, epochs=300, verbose=1, validation_split=0.1, )
 
 # 4. Generate user features for testing and full item features for retrieval
 test_user_model_input = test_model_input
